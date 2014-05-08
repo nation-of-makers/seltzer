@@ -1,4 +1,7 @@
 <?php
+global $config_paypal_API_UserName;
+global $config_paypal_API_Password;
+global $config_paypal_API_Signature;
 	/********************************************
 	PayPal API Module
 	 
@@ -15,9 +18,9 @@
 	//' Replace <API_PASSWORD> with your API Password
 	//' Replace <API_SIGNATURE> with your Signature
 	//'------------------------------------
-	$API_UserName="<API_USERNAME>";
-	$API_Password="<API_PASSWORD>";
-	$API_Signature="<API_SIGNATURE>";
+	$API_UserName = $config_paypal_API_UserName;
+	$API_Password = $config_paypal_API_Password;
+	$API_Signature = $config_paypal_API_Signature;
 
 	// BN Code 	is only applicable for partners
 	$sBNCode = "PP-ECWizard";
