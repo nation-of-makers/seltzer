@@ -1,5 +1,8 @@
 <?php
 
+global $crm_root;
+// Bootstrap the site
+require_once($crm_root . '/include/crm.inc.php');
 require_once ("paypalfunctions.php");
 // ==================================
 // PayPal Express Checkout Module
@@ -17,7 +20,7 @@ $paymentAmount = $_SESSION["Payment_Amount"];
 //' The currencyCodeType and paymentType 
 //' are set to the selections made on the Integration Assistant 
 //'------------------------------------
-$currencyCodeType = "GBP";
+$currencyCodeType = $config_currency_code;
 $paymentType = "Sale";
 
 //'------------------------------------
@@ -26,7 +29,7 @@ $paymentType = "Sale";
 //'
 //' This is set to the value entered on the Integration Assistant 
 //'------------------------------------
-$returnURL = "https://tony314/crm/index.php?q=contact&cid=5&tab=account";
+$returnURL = 'http://' . $config_host . crm_url('contact', array('query'=>array('cid'=>$cid, 'tab'=>'account')));
 
 //'------------------------------------
 //' The cancelURL is the location buyers are sent to when they hit the
@@ -34,7 +37,7 @@ $returnURL = "https://tony314/crm/index.php?q=contact&cid=5&tab=account";
 //'
 //' This is set to the value entered on the Integration Assistant 
 //'------------------------------------
-$cancelURL = "https://tony314/crm/index.php?q=contact&cid=5&tab=account";
+$cancelURL = 'http://' . $config_host . crm_url('contact', array('query'=>array('cid'=>$cid, 'tab'=>'account')));
 
 //'------------------------------------
 //' Calls the SetExpressCheckout API call
