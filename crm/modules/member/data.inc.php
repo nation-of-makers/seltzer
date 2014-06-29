@@ -353,6 +353,7 @@ function member_plan_save ($plan) {
         ";
         $res = mysql_query($sql);
         if (!$res) crm_error(mysql_error());
+        $plan = module_invoke_api('plan', $plan, 'update');
     } else {
         // Insert
         $sql = "
@@ -364,6 +365,7 @@ function member_plan_save ($plan) {
         $res = mysql_query($sql);
         if (!$res) crm_error(mysql_error());
         $plan['pid'] = mysql_insert_id();
+        $plan = module_invoke_api('plan', $plan, 'create');
     }
     return $plan;
 }
@@ -377,6 +379,7 @@ function member_plan_delete ($pid) {
     $sql = "DELETE FROM `plan` WHERE `pid`='$esc_pid'";
     $res = mysql_query($sql);
     if (!$res) crm_error(mysql_error());
+    $plan = module_invoke_api('plan', $plan, 'delete');
     message_register("Deleted plan: $description");
 }
 
@@ -489,6 +492,7 @@ function member_membership_save ($membership) {
         $sql .= "WHERE `sid`='$esc_sid'";
         $res = mysql_query($sql);
         if (!$res) crm_error(mysql_error());
+        $membership = module_invoke_api('membership', $membership, 'update');
     } else {
         // Insert
         $sql = "
@@ -500,6 +504,7 @@ function member_membership_save ($membership) {
         $res = mysql_query($sql);
         if (!$res) crm_error(mysql_error());
         $membership['sid'] = mysql_insert_id();
+        $membership = module_invoke_api('membership', $membership, 'add');
     }
     return $membership;
 }
@@ -512,6 +517,7 @@ function member_membership_delete ($sid) {
     $sql = "DELETE FROM `membership` WHERE `sid`='$esc_sid'";
     $res = mysql_query($sql);
     if (!$res) crm_error(mysql_error());
+    $membership = module_invoke_api('membership', $membership, 'delete');
 }
 
 /**
