@@ -73,3 +73,63 @@ function ldapbind() {
     $ldapbind = ldap_bind(ldapconn(), $ldapuser, $ldappass);
     return $ldapbind;
 }
+
+/**
+ * Update ldap data when a contact is updated.
+ * @param $contact The contact data array.
+ * @param $op The operation being performed.
+ */
+function ldap_contact_api ($contact, $op) {
+    switch ($op) {
+        case 'create':
+            //ldap_user_save ($contact);
+            break;
+        case 'update':
+            //ldap_user_save ($contact);
+            break;
+        case 'delete':
+            //ldap_user_delete ($esc_cid);
+            break;
+    }
+    return $contact;
+}
+
+/**
+ * Update ldap data when a plan is updated.
+ * @param $plan The plan data array.
+ * @param $op The operation being performed.
+ */
+function ldap_plan_api ($plan, $op) {
+    switch ($op) {
+        case 'create':
+            //ldap_group_save ($plan);
+            break;
+        case 'update':
+            //ldap_group_save ($plan);
+            break;
+        case 'delete':
+            //ldap_group_delete ($plan);
+            break;
+    }
+    return $plan;
+}
+
+/**
+ * Update ldap data when a membership is updated.
+ * @param $membership The membership data array.
+ * @param $op The operation being performed.
+ */
+function ldap_membership_api ($membership, $op) {
+    switch ($op) {
+        case 'add':
+            //ldap_group_user_add ($membership);
+            break;
+        case 'update':
+            //ldap_group_user_add ($membership);
+            break;
+        case 'delete':
+            //ldap_group_user_remove ($membership);
+            break;
+    }
+    return $membership;
+}
