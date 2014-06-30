@@ -133,3 +133,162 @@ function ldap_membership_api ($membership, $op) {
     }
     return $membership;
 }
+
+/**
+ * save a user to the LDAP directory
+ */
+function ldap_user_save ($contact) {
+    
+    if (ldapbind()) {
+        message_register('LDAP bind successful...');
+        
+        // prepare data
+        $username = $contact['user']['username'];
+        $info["objectClass"][0] = "inetOrgPerson";
+        $info["objectClass"][1] = "posixAccount";
+        //$info["objectClass"][2] = "radiusprofile";
+        //$info["dialupAccess"] = "access_attr";
+        $info["dn"] = "cn=$username,OU=Users," . ldapbasedn();
+        $info["cn"] = $username;
+        $info["givenName"] = $contact['firstName'];
+        $info["sn"] = $contact['lastName'];
+        $info["mail"] = $contact'email'];
+        $info["mobile"] = $contact['phone'];
+        
+        // add data to directory
+        ldap_add(ldapconn(), $info["dn"], $info);
+        message_register('LDAP add successful...');
+        
+        ldap_close(ldapconn());
+        } else {
+            error_register('LDAP bind failed...');
+    }
+}
+
+/**
+ * save a group to the LDAP directory
+ */
+function ldap_group_save ($plan) {
+    
+    if (ldapbind()) {
+        message_register('LDAP bind successful...');
+        
+        // prepare data
+        
+        $planName = $plan['name'];
+        //$gid = "1000" . $plan['pid'];
+        //$info["objectClass"][0] = "posixGroup";
+        $info["objectClass"][0] = "groupOfNames";
+        $info["dn"] = "cn=$planName,OU=Groups," . ldapbasedn();
+        $info["cn"] = $planName;
+        //$info["gidNumber"] = $gid;
+        $info["description"] = $planName;
+        
+        //print_r($info);
+        //die();
+        
+        // add data to directory
+        ldap_add(ldapconn(), $info["dn"], $info);
+        message_register('LDAP add successful...');
+        
+        ldap_close(ldapconn());
+        } else {
+            error_register('LDAP bind failed...');
+    }
+}
+
+/**
+ * add a user to a group in the LDAP directory
+ */
+function ldap_group_user_add ($membership){
+    
+    if (ldapbind()) {
+        message_register('LDAP bind successful...');
+        
+        $contact_data = crm_get_data('contact', array('cid'=>$membership['cid']));
+        $contact = $contact_data[0];
+        $username = $contact['user']['username'];
+        $ldapUser = "CN=$username,OU=Users," . ldapbasedn();
+        
+        $plan_data = crm_get_data('member_plan', array('pid'=>$membership['pid']));
+        $plan = $plan_data[0];
+        $planName = $plan['name'];
+        $group_name = "CN=$planName,OU=Groups," . ldapbasedn();
+        
+        $group_info['member'] = $ldapUser; // User's DN is added to group's 'member' array
+        
+        ldap_mod_add($ldapconn,$group_name,$group_info);
+        message_register('LDAP add successful...');
+        
+        ldap_close(ldapconn());
+        } else {
+            error_register('LDAP bind failed...');
+    }
+}
+
+/**
+ * delete a user from the LDAP directory
+ */
+function ldap_user_delete ($cid){
+    
+    if (ldapbind()) {
+        message_register('LDAP bind successful...');
+        $contact_data = crm_get_data('contact', array('cid'=>$cid));
+        $contact = $contact_data[0];
+        $username = $contact['user']['username'];
+        $ldapUser = "CN=$username,OU=Users," . ldapbasedn();
+        ldap_delete($ldapconn,$ldapUser);
+        message_register('LDAP user remove successful...');
+        ldap_close(ldapconn());
+        } else {
+            error_register('LDAP bind failed...');
+    }
+}
+
+/**
+ * delete a group from the LDAP directory
+ */
+function ldap_group_delete ($plan){
+    
+    if (ldapbind()) {
+        message_register('LDAP bind successful...');
+        $planName = $plan['name'];
+        $group_name = "CN=$planName,OU=Groups," . ldapbasedn();
+        ldap_delete($ldapconn,$group_name);
+        message_register('LDAP group remove successful...');
+        
+        ldap_close(ldapconn());
+        } else {
+            error_register('LDAP bind failed...');
+    }
+}
+
+/**
+ * delete a user from a group in the LDAP directory
+ */
+function ldap_group_user_delete ($membership){
+    
+    if (ldapbind()) {
+        message_register('LDAP bind successful...');
+        
+        $contact_data = crm_get_data('contact', array('cid'=>$membership['cid']));
+        $contact = $contact_data[0];
+        $username = $contact['user']['username'];
+        $ldapUser = "CN=$username,OU=Users," . ldapbasedn();
+        
+        $plan_data = crm_get_data('member_plan', array('pid'=>$membership['pid']));
+        $plan = $plan_data[0];
+        $planName = $plan['name'];
+        $group_name = "CN=$planName,OU=Groups," . ldapbasedn();
+        
+        $group_info['member'] = $ldapUser; // User's DN is added to group's 'member' array
+        
+        ldap_mod_del($ldapconn, $group_name, $group_info);
+        message_register('LDAP user remove from group successful...');
+        
+        ldap_close(ldapconn());
+        } else {
+            error_register('LDAP bind failed...');
+    }
+}
+
