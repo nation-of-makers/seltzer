@@ -26,6 +26,13 @@ $config_db_user = '';
 $config_db_password = '';
 $config_db_db = '';
 
+// LDAP variables
+$ldaphost = 'localhost';                // ldap server
+$ldapport = 389;                        // ldap server port number
+$ldapbasedn = 'dc=seltzercrm,dc=org';   // base DN
+$ldapuser  = "cn=admin,$ldapbasedn";    // ldap username
+$ldappass = '';                         // ldap password
+
 // Site info
 
 // The title to display in the title bar
@@ -112,6 +119,9 @@ $config_modules[] = "amazon_payment";
 
 // Email list management
 //$config_modules[] = "email_list";
+
+// LDAP connection
+//$config_modules[] = "ldap";
 
 // Links to show in the main menu
 $config_links = array(
