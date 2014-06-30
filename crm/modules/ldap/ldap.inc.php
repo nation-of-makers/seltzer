@@ -44,3 +44,32 @@ function ldap_install($old_revision = 0) {
     }
 }
 
+/**
+ * LDAP Base DN
+ */
+function ldapbasedn() {
+    global $ldapbasedn;
+    return $ldapbasedn;
+}
+
+/**
+ * connect to LDAP server
+ */
+function ldapconn() {
+    global $ldaphost;
+    global $ldapport;
+    ldap_set_option($ldapconn, LDAP_OPT_PROTOCOL_VERSION, 3);
+    $ldapconn = ldap_connect($ldaphost, $ldapport)
+          or die(error_register("Could not connect to LDAP server " . ldaphost() . "."));
+    return $ldapconn;
+}
+
+/**
+ * binding to LDAP server
+ */
+function ldapbind() {
+    global $ldapuser;
+    global $ldappass;
+    $ldapbind = ldap_bind(ldapconn(), $ldapuser, $ldappass);
+    return $ldapbind;
+}
