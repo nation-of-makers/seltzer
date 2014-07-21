@@ -26,6 +26,10 @@ $config_db_user = '';
 $config_db_password = '';
 $config_db_db = '';
 
+// Facebook integration configuration
+$facebook_app_id = '';
+$facebook_app_secret = '';
+
 // Site info
 
 // The title to display in the title bar
@@ -112,6 +116,9 @@ $config_modules[] = "amazon_payment";
 
 // Email list management
 //$config_modules[] = "email_list";
+
+// Facebook Integration
+//$config_modules[] = "facebook";
 
 // Links to show in the main menu
 $config_links = array(
