@@ -40,7 +40,7 @@ foreach ($_POST as $key => $value) {
 $http_params = implode('&', $clauses);
 // Generate the request parameters
 $q = 'Action=VerifySignature'
-    . '&UrlEndPoint=' . rawurlencode('http://' . $config_host . base_path() . 'modules/amazon_payment/ipn.php')
+    . '&UrlEndPoint=' . rawurlencode('https://' . $config_host . base_path() . 'modules/amazon_payment/ipn.php')
     . '&HttpParameters=' . rawurlencode($http_params)
     . '&Version=2008-09-17';
 // Send the request
@@ -93,5 +93,6 @@ $payment = array(
 );
 $payment = payment_save($payment);
 // Log out
-$_SESSION['userId'] = 0;
+//$_SESSION['userId'] = 0;
+//CID 0 IS NOT NOBODY!
 session_destroy();

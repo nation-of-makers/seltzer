@@ -1,10 +1,10 @@
 <?php
 
 /*
-    Copyright 2009-2014 Edward L. Platt <ed@elplatt.com>
+    Copyright Matthew J. Gardeski <mjgardes@mtu.edu>
     
     This file is part of the Seltzer CRM Project
-    amazon_payment.inc.php - Amazon payments extensions for the payment module.
+    foxycart.inc.php integration with FoxyCart because apparently FoxyCart > *
 
     Seltzer is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
  * @return This module's revision number.  Each new release should increment
  * this number.
  */
-function amazon_payment_revision () {
+function foxycart_revision () {
     return 1;
 }
 
@@ -33,15 +33,15 @@ function amazon_payment_revision () {
  * @param $old_revision The last installed revision of this module, or 0 if the
  *   module has never been installed.
  */
-function amazon_payment_install($old_revision = 0) {
+function foxycart_install($old_revision = 0) {
     // Create initial database table
     if ($old_revision < 1) {
         
         // Additional payment info for amazon payments
         $sql = '
-            CREATE TABLE IF NOT EXISTS `payment_amazon` (
-              `pmtid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
-              `amazon_name` varchar(255) NOT NULL,
+            CREATE TABLE IF NOT EXISTS `payment_foxycart` (
+              `transid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+              `email` varchar(255) NOT NULL,
               PRIMARY KEY (`pmtid`)
             ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
         ';
@@ -50,10 +50,10 @@ function amazon_payment_install($old_revision = 0) {
         
         // Additional contact info for amazon payments
         $sql = '
-            CREATE TABLE IF NOT EXISTS `contact_amazon` (
+            CREATE TABLE IF NOT EXISTS `contact_foxycart` (
               `cid` mediumint(8) unsigned NOT NULL,
-              `amazon_name` varchar(255) NOT NULL,
-              PRIMARY KEY (`amazon_name`)
+              `fc_email` varchar(255) NOT NULL,
+              PRIMARY KEY (`fc_email`)
             ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
         ';
         $res = mysql_query($sql);
@@ -70,18 +70,18 @@ function amazon_payment_install($old_revision = 0) {
  * @param $opts An associative array of options.
  * @return An array of modified structures.
  */
-function amazon_payment_data_alter ($type, $data = array(), $opts = array()) {
+function foxycart_data_alter ($type, $data = array(), $opts = array()) {
     switch ($type) {
         case 'payment':
             // Get amazon payments
             $pmtids = array();
             foreach ($data as $payment) { $pmtids[] = $payment['pmtid']; }
             $opts = array('pmtid' => $pmtids);
-            $amazon_payment_map = crm_map(crm_get_data('amazon_payment', $opts), 'pmtid');
+            $foxycart_map = crm_map(crm_get_data('foxycart', $opts), 'pmtid');
             // Add amazon data to each payment data
             foreach ($data as $i => $payment) {
-                if (array_key_exists($payment['pmtid'], $amazon_payment_map)) {
-                    $data[$i]['amazon'] = $amazon_payment_map[$payment['pmtid']];
+                if (array_key_exists($payment['pmtid'], $foxycart_map)) {
+                    $data[$i]['amazon'] = $foxycart_map[$payment['pmtid']];
                 }
             }
     }
@@ -91,7 +91,7 @@ function amazon_payment_data_alter ($type, $data = array(), $opts = array()) {
 /**
  * Return data for one or more amazon payments.
  */
-function amazon_payment_data ($opts = array()) {
+function foxycart_data ($opts = array()) {
     $sql = "SELECT `pmtid`, `amazon_name` FROM `payment_amazon` WHERE 1";
     if (isset($opts['pmtid'])) {
         if (is_array($opts['pmtid'])) {
@@ -106,11 +106,11 @@ function amazon_payment_data ($opts = array()) {
     $res = mysql_query($sql);
     if (!$res) crm_error(mysql_error());
     // Read from database and store in a structure
-    $amazon_payment_data = array();
+    $foxycart_data = array();
     while ($db_row = mysql_fetch_assoc($res)) {
-        $amazon_payment_data[] = $db_row;
+        $foxycart_data[] = $db_row;
     }
-    return $amazon_payment_data;
+    return $foxycart_data;
 };
 
 /**
@@ -121,7 +121,7 @@ function amazon_payment_data ($opts = array()) {
  *   'filter' An array mapping filter names to filter values;
  * @return An array with each element representing a single payment.
 */
-function amazon_payment_contact_data ($opts = array()) {
+function foxycart_contact_data ($opts = array()) {
     $sql = "SELECT `cid`, `amazon_name` FROM `contact_amazon` WHERE 1";
     if (isset($opts['filter'])) {
         foreach ($opts['filter'] as $filter => $value) {
@@ -146,12 +146,14 @@ function amazon_payment_contact_data ($opts = array()) {
     return $names;
 }
 
+// Contact & Payment addition, deletion, update ////////////////////////////////
+
 /**
  * Save an amazon contact.  If the name is already in the database,
  * the mapping is updated.  When updating the mapping, any fields that are not
  * set are not modified.
  */
-function amazon_payment_contact_save ($contact) {
+function foxycart_contact_save ($contact) {
     $esc_name = mysql_real_escape_string($contact['amazon_name']);
     $esc_cid = mysql_real_escape_string($contact['cid']);    
     // Check whether the amazon contact already exists in the database
@@ -182,10 +184,10 @@ function amazon_payment_contact_save ($contact) {
 
 /**
  * Delete an amazon contact.
- * @param $amazon_payment_contact The amazon_payment_contact data structure to delete, must have a 'cid' element.
+ * @param $foxycart_contact The foxycart_contact data structure to delete, must have a 'cid' element.
  */
-function amazon_payment_contact_delete ($amazon_payment_contact) {
-    $esc_cid = mysql_real_escape_string($amazon_payment_contact['amazon_name']);
+function foxycart_contact_delete ($foxycart_contact) {
+    $esc_cid = mysql_real_escape_string($foxycart_contact['amazon_name']);
     $sql = "DELETE FROM `contact_amazon` WHERE `amazon_name`='$esc_cid'";
     $res = mysql_query($sql);
     if (!$res) die(mysql_error());
@@ -196,11 +198,11 @@ function amazon_payment_contact_delete ($amazon_payment_contact) {
 }
 
 /**
- * Update amazon_payment data when a payment is updated.
+ * Update foxycart data when a payment is updated.
  * @param $contact The contact data array.
  * @param $op The operation being performed.
  */
-function amazon_payment_payment_api ($payment, $op) {
+function foxycart_payment_api ($payment, $op) {
     if ($payment['method'] !== 'amazon') {
         return $payment;
     }
@@ -227,7 +229,7 @@ function amazon_payment_payment_api ($payment, $op) {
             ";
             $res = mysql_query($sql);
             if (!$res) crm_error(mysql_error());
-            amazon_payment_contact_save($amazon_contact);
+            foxycart_contact_save($amazon_contact);
             break;
         case 'update':
             $sql = "
@@ -237,7 +239,7 @@ function amazon_payment_payment_api ($payment, $op) {
             ";
             $res = mysql_query($sql);
             if (!$res) crm_error(mysql_error());
-            amazon_payment_contact_save($amazon_contact);
+            foxycart_contact_save($amazon_contact);
             break;
         case 'delete':
             $sql = "
@@ -250,22 +252,24 @@ function amazon_payment_payment_api ($payment, $op) {
     return $payment;
 }
 
+// Table & Page rendering //////////////////////////////////////////////////////
+
 /**
  * Generate payments contacts table.
  *
- * @param $opts an array of options passed to the amazon_payment_contact_data function
+ * @param $opts an array of options passed to the foxycart_contact_data function
  * @return a table (array) listing the contacts represented by all payments
  *   and their associated amazon name
  */
-function amazon_payment_contact_table ($opts) {
-    $data = crm_get_data('amazon_payment_contact', $opts);
+function foxycart_contact_table ($opts) {
+    $data = crm_get_data('foxycart_contact', $opts);
     // Initialize table
     $table = array(
         "id" => '',
         "class" => '',
         "rows" => array(),
         "columns" => array()
-    );    
+    );
     // Check for permissions
     if (!user_access('payment_view')) {
         error_register('User does not have permission to view payments');
@@ -300,7 +304,7 @@ function amazon_payment_contact_table ($opts) {
             // TODO
             // Add delete op
             if (user_access('payment_delete')) {
-                $ops[] = '<a href="' . crm_url('delete&type=amazon_payment_contact&id=' . htmlspecialchars($union['amazon_name'])) . '">delete</a>';
+                $ops[] = '<a href="' . crm_url('delete&type=foxycart_contact&id=' . htmlspecialchars($union['amazon_name'])) . '">delete</a>';
             }
             // Add ops row
             $row[] = join(' ', $ops);
@@ -318,45 +322,34 @@ function amazon_payment_contact_table ($opts) {
  * @param $page_name The name of the page being rendered.
  * @param $options The array of options passed to theme('page').
 */
-function amazon_payment_page (&$page_data, $page_name, $options) {
+function foxycart_page (&$page_data, $page_name, $options) {
     switch ($page_name) {
         case 'payments':
             if (user_access('payment_edit')) {
-                $content = theme('amazon_payment_admin');
-                $content .= theme('form', crm_get_form('amazon_payment_import'));
+                $content = theme('foxycart_admin');
+                $content .= theme('form', crm_get_form('foxycart_import'));
                 page_add_content_top($page_data, $content, 'Amazon');
-                if (function_exists('billing_revision')) {
-                    page_add_content_top($page_data, theme('form', crm_get_form('amazon_payment_email_bills')), 'Billing');
-                }
             }
             break;
         case 'amazon-admin':
             page_set_title($page_data, 'Administer Amazon Contacts');
-            page_add_content_top($page_data, theme('table', 'amazon_payment_contact', array('show_export'=>true)), 'View');
-            page_add_content_top($page_data, theme('form', crm_get_form('amazon_payment_contact_add')), 'Add');
-            break;
-        case 'contact':
-            if (user_access('payment_view') || $_GET['cid'] == user_id()) {
-                page_add_content_bottom($page_data, theme('amazon_payment_account_info', $_GET['cid']), 'Account');
-            }
-            if (function_exists('billing_revision')) {
-                if (user_access('payment_view') || $_GET['cid'] == user_id()) {
-                    page_add_content_bottom($page_data, theme('amazon_payment_first_month', $_GET['cid']), 'Plan');
-                }
-            }
+            page_add_content_top($page_data, theme('table', crm_get_table('foxycart_contact', array('show_export'=>true)), 'View'));
+            page_add_content_top($page_data, theme('form', crm_get_form('foxycart_contact_add')), 'Add');
             break;
     }
 }
 
+// Forms ///////////////////////////////////////////////////////////////////////
+
 /**
  * @return an amazon payments import form structure.
  */
-function amazon_payment_import_form () {
+function foxycart_import_form () {
     return array(
         'type' => 'form'
         , 'method' => 'post'
         , 'enctype' => 'multipart/form-data'
-        , 'command' => 'amazon_payment_import'
+        , 'command' => 'foxycart_import'
         , 'fields' => array(
             array(
                 'type' => 'fieldset'
@@ -387,7 +380,7 @@ function amazon_payment_import_form () {
  * @param The cid of the contact to add a amazon contact for.
  * @return The form structure.
 */
-function amazon_payment_contact_add_form () {
+function foxycart_contact_add_form () {
     
     // Ensure user is allowed to edit amazon contacts
     if (!user_access('payment_edit')) {
@@ -398,7 +391,7 @@ function amazon_payment_contact_add_form () {
     $form = array(
         'type' => 'form',
         'method' => 'post',
-        'command' => 'amazon_payment_contact_add',
+        'command' => 'foxycart_contact_add',
         'fields' => array(
             array(
                 'type' => 'fieldset',
@@ -433,7 +426,7 @@ function amazon_payment_contact_add_form () {
  * @param $cid The cid of the amazon contact to delete.
  * @return The form structure.
 */
-function amazon_payment_contact_delete_form ($amazon_name) {
+function foxycart_contact_delete_form ($amazon_name) {
     
     // Ensure user is allowed to delete amazon contacts
     if (!user_access('payment_edit')) {
@@ -444,7 +437,7 @@ function amazon_payment_contact_delete_form ($amazon_name) {
     $form = array(
         'type' => 'form',
         'method' => 'post',
-        'command' => 'amazon_payment_contact_delete',
+        'command' => 'foxycart_contact_delete',
         'hidden' => array(
               'amazon_name' => $amazon_name
         ),
@@ -470,62 +463,20 @@ function amazon_payment_contact_delete_form ($amazon_name) {
 }
 
 /**
- * Form for initiating membership billing emails.
- * @return The form structure.
- */
-function amazon_payment_email_bills_form () {
-    
-    $email_date = variable_get('amazon_payment_last_email', '');
-    $from_label = empty($email_date) ? 'never' : $email_date;
-    
-    // Create form structure
-    $form = array(
-        'type' => 'form'
-        , 'method' => 'post'
-        , 'command' => 'amazon_payment_email'
-        , 'fields' => array(
-            array(
-                'type' => 'fieldset'
-                , 'label' => 'Send Billing Emails'
-                , 'fields' => array(
-                    array(
-                        'type' => 'message',
-                        'value' => 'This will send an email with a payment button to anyone who has a nonzero account balacne.'
-                        ),
-                    array(
-                        'type' => 'readonly',
-                        'class' => 'date',
-                        'label' => 'Last Emailed',
-                        'name' => 'last_emailed',
-                        'value' => $from_label
-                    ),
-                    array(
-                        'type' => 'submit'
-                        , 'value' => 'Send Emails'
-                    )
-                )
-            )
-        )
-    );
-    
-    return $form;
-}
-
-/**
  * Implementation of hook_form_alter().
  * @param &$form The form being altered.
  * @param &$form_data Metadata about the form.
  * @param $form_id The name of the form.
  */
-function amazon_payment_form_alter($form, $form_id) {
+function foxycart_form_alter($form, $form_id) {
     if ($form_id === 'payment_edit') {
         // Modify amazon payments only
         $payment = $form['data']['payment'];
         if ($payment['method'] !== 'amazon') {
             return $form;
         }
-        $amazon_payment = $payment['amazon'];
-        if (empty($amazon_payment)) {
+        $foxycart = $payment['amazon'];
+        if (empty($foxycart)) {
             error_register("Payment type 'amazon' but no associated data for payment:$payment[pmtid].");
             return $form;
         }
@@ -537,7 +488,7 @@ function amazon_payment_form_alter($form, $form_id) {
                     'type' => 'readonly'
                     , 'label' => 'Amazon Name'
                     , 'name' => 'amazon_name'
-                    , 'value' => $amazon_payment['amazon_name']
+                    , 'value' => $foxycart['amazon_name']
                 );
                 array_unshift($form['fields'][$i]['fields'], $name_field);
                 // Loop through fields in Edit Payment fieldset
@@ -556,12 +507,14 @@ function amazon_payment_form_alter($form, $form_id) {
     return $form;
 }
 
+// Commands ////////////////////////////////////////////////////////////////////
+
 /**
  * Handle amazon payment import request.
  *
  * @return The url to display on completion.
  */
-function command_amazon_payment_import () {
+function command_foxycart_import () {
     if (!user_access('payment_edit')) {
         error_register('User does not have permission: payment_edit');
         return crm_url('payments');
@@ -612,7 +565,7 @@ function command_amazon_payment_import () {
         );
         // Check if the amazon name is linked to a contact
         $opts = array('filter'=>array('amazon_name'=>$row['Name']));
-        $contact_data = amazon_payment_contact_data($opts);
+        $contact_data = foxycart_contact_data($opts);
         if (count($contact_data) > 0) {
             $payment['credit_cid'] = $contact_data[0]['cid'];
         }
@@ -628,111 +581,27 @@ function command_amazon_payment_import () {
  * Add an amazon contact.
  * @return The url to display on completion.
  */
-function command_amazon_payment_contact_add () {
-    amazon_payment_contact_save($_POST);
+function command_foxycart_contact_add () {
+    foxycart_contact_save($_POST);
     return crm_url('amazon-admin');
 }
 
 /**
- * Send emails to any members with a positive balance.
+ * Delete an amazon contact.
+ * @param $foxycart_contact The foxycart_contact data structure to delete, must have a 'cid' element.
  */
-function command_amazon_payment_email () {
-    global $config_email_from;
-    global $config_site_title;
-    // Get balances and contacts
-    $cids = payment_contact_filter(array('balance_due'=>true));
-    $balances = payment_accounts(array('cid'=>$cids));
-    $contacts = crm_get_data('contact', array('cid'=>$cids));
-    $cidToContact = crm_map($contacts, 'cid');
-    // Email each contact with a balance
-    foreach ($balances as $cid => $balance) {
-        // Construct button
-        $params = array(
-            'referenceId' => $cid
-            , 'amount' => $balance['code'] . ' ' . payment_format_currency($balance, false) 
-            , 'description' => 'CRM Dues Payment'
-        );
-        $amount = payment_format_currency($balance);
-        $button = theme('amazon_payment_button', $cid, $params);
-        // Send email
-        $to = $cidToContact[$cid]['email'];
-        $subject = "[$config_site_title] Payment Due";
-        $from = $config_email_from;
-        $headers = "Content-type: text/html\r\nFrom: $from\r\n";
-        $message = "<p>Hello,<br/>Your current account balance is $amount.  To pay this balance using Amazon Payments, please click the button below.</p>$button";
-        $res = mail($to, $subject, $message, $headers);
-    }
-    message_register('E-mails have been sent');
-    variable_set('amazon_payment_last_email', date('Y-m-d'));
-    return crm_url('payments', array('query'=>array('tab'=>'billing')));
+function command_foxycart_contact_delete () {
+    foxycart_contact_delete($_POST);
+    return crm_url('amazon-admin');
 }
+
+// Themes //////////////////////////////////////////////////////////////////////
 
 /**
  * Return themed html for amazon admin links.
  */
-function theme_amazon_payment_admin () {
+function theme_foxycart_admin () {
     return '<p><a href=' . crm_url('amazon-admin') . '>Administer</a></p>';
-}
-
-/**
- * Return themed html for prorated first month button.
- */
-function theme_amazon_payment_first_month ($cid) {
-    if (!function_exists('billing_revision')) {
-        return 'Prorated dues payment requires billing module.';
-    }
-    $contact = crm_get_one('contact', array('cid'=>$cid));
-    // Calculate fraction of the billing period
-    $mship = end($contact['member']['membership']);
-    $date = getdate(strtotime($mship['start']));
-    $period = billing_days_in_period($date);
-    $day = $date['mday'];
-    $fraction = ($period - $day + 1.0) / $period;
-    // Get payment amount
-    $due = payment_parse_currency($mship['plan']['price']);
-    $due['value'] = ceil($due['value'] * $fraction);
-    $html .= $due['value'];
-    // Create button
-    $html = "<fieldset><legend>First month prorated dues</legend>";
-    $params = array(
-        'referenceId' => $cid
-        , 'amount' => $due['code'] . ' ' . payment_format_currency($due, false) 
-        , 'description' => 'CRM Dues Payment'
-    );
-    $amount = payment_format_currency($due);
-    $html .= "<p><strong>First month's dues:</strong> $amount</p>";
-    if ($due['value'] > 0) {
-        $html .= theme('amazon_payment_burron', $cid, $params);
-    }
-    $html .= '</fieldset>';
-    return $html;
-}
-
-/**
- * Return an account summary and amazon payment button.
- * @param $cid The cid of the contact to create a form for.
- * @return An html string for the summary and button.
- */
-function theme_amazon_payment_account_info ($cid) {
-    $balances = payment_accounts(array('cid'=>$cid));
-    $balance = $balances[$cid];
-    $params = array(
-        'referenceId' => $cid
-        , 'amount' => $balance['code'] . ' ' . payment_format_currency($balance, false) 
-        , 'description' => 'CRM Dues Payment'
-    );
-    $output = '<div>';
-    $amount = payment_format_currency($balance);
-    if ($balance['value'] > 0) {
-        $output .= "<p><strong>Outstanding balance:</strong> $amount</p>";
-        $output .= theme('amazon_payment_button', $cid, $params);
-    } else {
-        $balance['value'] = -1*$balance['value'];
-        $amount = payment_format_currency($balance);
-        $output .= "<p><strong>No balance owed.  Account credit:</strong> $amount</p>";
-    }
-    $output .= '</div>';
-    return $output;
 }
 
 /**
@@ -741,15 +610,15 @@ function theme_amazon_payment_account_info ($cid) {
  * @param $params Options for the button.
  * @return A string containing the themed html.
  */
-function theme_amazon_payment_button ($cid, $params = array()) {
-    global $config_amazon_payment_access_key_id;
-    global $config_amazon_payment_secret;
+function theme_foxycart_button ($cid, $params = array()) {
+    global $config_foxycart_access_key_id;
+    global $config_foxycart_secret;
     global $config_host;
-    if (empty($config_amazon_payment_access_key_id)) {
+    if (empty($config_foxycart_access_key_id)) {
         error_register('Missing Amazon Access Key ID');
         return '';
     }
-    if (empty($config_amazon_payment_secret)) {
+    if (empty($config_foxycart_secret)) {
         error_register('Missing Amazon Secret Key');
         return '';
     }
@@ -760,7 +629,7 @@ function theme_amazon_payment_button ($cid, $params = array()) {
         , 'amount' => 'USD 1.1'
         , 'cobrandingStyle' => 'logo'
         , 'description' => 'Test Widget'
-        , 'ipnUrl' => 'https://' . $config_host . base_path() . 'modules/amazon_payment/ipn.php'
+        , 'ipnUrl' => 'https://' . $config_host . base_path() . 'modules/foxycart/ipn.php'
         , 'returnUrl' => 'https://' . $config_host . crm_url('contact', array('query'=>array('cid'=>$cid, 'tab'=>'account')))
         , 'processImmediate' => '1'
         , 'cobrandingStyle' => 'logo'
@@ -774,14 +643,14 @@ function theme_amazon_payment_button ($cid, $params = array()) {
     }
     // Always use AWS Signatures v2 with SHA256 HMAC
     // http://docs.aws.amazon.com/general/latest/gr/signature-version-2.html
-    $params['accessKey'] = $config_amazon_payment_access_key_id;
+    $params['accessKey'] = $config_foxycart_access_key_id;
     $params['signatureVersion'] = '2';
     $params['signatureMethod'] = 'HmacSHA256';
     $host = 'authorize.payments.amazon.com';
     $path = '/pba/paypipeline';
-    $params['signature'] = amazon_payment_signature($params, $host, $path, 'POST');
+    $params['signature'] = foxycart_signature($params, $host, $path, 'POST');
     $html = <<<EOF
-<!--<form action ="https://authorize.payments.amazon.com/pba/paypipeline" method="POST"/>
+<form action ="https://authorize.payments.amazon.com/pba/paypipeline" method="POST"/>
 <input type="image" src="https://authorize.payments.amazon.com/pba/images/SLPayNowWithLogo.png" border="0"/>
 <input type="hidden" name="accessKey" value="$params[accessKey]"/>
 <input type="hidden" name="amount" value="$params[amount]"/>
@@ -797,8 +666,7 @@ function theme_amazon_payment_button ($cid, $params = array()) {
 <input type="hidden" name="cobrandingStyle" value="$params[cobrandingStyle]"/>
 <input type="hidden" name="signatureVersion" value="$params[signatureVersion]"/>
 <input type="hidden" name="signature" value="$params[signature]"/>
-</form>-->
-<p>Go to the <a href="/membership">membership</a> page to make a payment.</p>
+</form>
 EOF;
     return $html;
 }
@@ -809,13 +677,13 @@ EOF;
  * @param $params
  * @return The signature.
  */
-function amazon_payment_signature ($params, $host, $path, $method) {
-    global $config_amazon_payment_secret;
+function foxycart_signature ($params, $host, $path, $method) {
+    global $config_foxycart_secret;
     $query = "$method\n";
     $query .= "$host\n";
     $query .= "$path\n";
-    $query .= amazon_payment_query_string($params);
-    $signature = base64_encode(hash_hmac('sha256', $query, $config_amazon_payment_secret, true));
+    $query .= foxycart_query_string($params);
+    $signature = base64_encode(hash_hmac('sha256', $query, $config_foxycart_secret, true));
     return $signature;
 }
 
@@ -824,7 +692,7 @@ function amazon_payment_signature ($params, $host, $path, $method) {
  * @param $params Associative array of params to include.
  * @return The plain text string.
  */
-function amazon_payment_query_string ($params) {
+function foxycart_query_string ($params) {
     uksort($params, 'strcmp');
     $clauses = array();
     foreach ($params as $key => $value) {
