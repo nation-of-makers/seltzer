@@ -93,5 +93,4 @@ $payment = array(
 );
 $payment = payment_save($payment);
 // Log out
-$_SESSION['userId'] = 0;
 session_destroy();
