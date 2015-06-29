@@ -60,13 +60,21 @@ function crm_get_form () {
  */
 function form_set_value ($field, $values) {
     // Set value if specified
-    $name = $field['name'];
+    if(isset($_GET['name'])) {
+        $name = $field['name'];
+    } else {
+        $name = "";
+    }
     if (isset($values[$name])) {
         $field['value'] = $values[$name];
     } else if (isset($field['value'])) {
         return $field;
     } else {
-        $field['value'] = $field['default'];
+        if(isset($_GET['default'])) {
+            $field['value'] = $field['default'];
+        } else {
+            $field['value'] = "";
+        }
     }
     return $field;
 }

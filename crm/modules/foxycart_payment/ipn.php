@@ -19,12 +19,11 @@
     along with Seltzer.  If not, see <http://www.gnu.org/licenses/>.
 */
 // We must be authenticated to insert into the database
-session_start();
-$_SESSION['userId'] = 1;
 // Save path of directory containing index.php
 $crm_root = realpath(dirname(__FILE__) . '/../..');
 // Bootstrap the crm
 require_once('../../include/crm.inc.php');
+$_SESSION['userId'] = 1;
 
 //Script by David Hollander, www.foxy-shop.com
 //version 1.0, 7/9/2012
@@ -105,12 +104,16 @@ if (isset($_POST["FoxyData"])) {
 
 // Skip transactions that have already been imported
 
+$notes = "";
 $payment_opts = array(
     'filter' => array('confirmation' => $transaction_id)
 );
 $data = crm_get_data('payment', $payment_opts);
 if (count($data) > 0) {
-    die('This transaction has already been logged by the CRM.  If you want to update the record, delete it from the CRM before re-feeding.');
+//    die('This transaction has already been logged by the CRM.  If you want to update the record, delete it from the CRM before re-feeding.');
+//    print "Warning: updating a payment"
+//    $notes .= "Update recieved. ";
+    die("foxy"); //This doesn't really give us anything, so tell FC to shut up now.
 }
 // Parse the data and insert into the database
 // 'USD 12.34' goes to ['USD', '1234']
@@ -129,10 +132,32 @@ if (empty($cid)) {
     $row = mysql_fetch_assoc($res);
     $cid = $row['cid'];
 }
-$cents = $product_price * 100;
-if (empty($cid)) {
-    $fullname = "$customer_first_name $customer_last_name";
+
+if ($product_quantity == 11) {
+    $notes .= "Free month applied.";
+    $product_quantity++;
 }
+
+if ($product_quantity == 12) {
+    $notes .= "11 months charged.";
+}
+
+
+$cents = $product_price * 100 * $product_quantity;
+$fullname = "$customer_first_name $customer_last_name";
+
+if (empty($cid)) {
+    $notes .= "$fullname: Wrong email address";
+    if ($fullname == " ") {
+        $notes .= " and no name in metadata. ";
+    }
+}
+
+if ($product_code == "Donation" ){
+  $cid = NULL;
+  $notes .= "$fullname Donation. No dues credit. ";
+}
+
 $payment = array(
     'date' => date('Y-m-d', strtotime( $transaction_date))
     , 'credit_cid' => $cid
@@ -141,7 +166,7 @@ $payment = array(
     , 'description' => $product_name
     , 'method' => 'FoxyCart'
     , 'confirmation' => $transaction_id
-    , 'notes' => "$fullname: Wrong email address on file"
+    , 'notes' => $notes 
 );
 $payment = payment_save($payment);
         }

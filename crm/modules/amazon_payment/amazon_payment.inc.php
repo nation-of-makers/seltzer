@@ -691,7 +691,7 @@ function theme_amazon_payment_first_month ($cid) {
     // Get payment amount
     $due = payment_parse_currency($mship['plan']['price']);
     $due['value'] = ceil($due['value'] * $fraction);
-    $html .= $due['value'];
+    //$html .= $due['value']; What the fuck is this
     // Create button
     $html = "<fieldset><legend>First month prorated dues</legend>";
     $params = array(

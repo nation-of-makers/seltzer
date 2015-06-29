@@ -3,7 +3,7 @@
 /*
     Copyright Matthew J. Gardeski <mjgardes@mtu.edu>
     
-    This file is part of the Seltzer CRM Project
+    This file doesn't do anything
     foxycart.inc.php integration with FoxyCart because apparently FoxyCart > *
 
     Seltzer is free software: you can redistribute it and/or modify

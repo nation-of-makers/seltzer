@@ -736,7 +736,9 @@ function payment_history_table ($opts) {
         $contact = '';
         if ($payment['credit_cid'] === $cid) {
             $payment = payment_invert_currency($payment);
-            $contact = $payment['debit'];
+            if (isset($_GET['debit'])) {
+                $contact = $payment['debit'];
+            }
         } else {
             $contact = $payment['credit'];
         }
@@ -760,7 +762,7 @@ function payment_history_table ($opts) {
         $row[] = $contactName;
         $row[] = payment_format_currency($balance);
         $ops = '';
-        if (user_access('payment_edit')) {
+        if (isset($_GET['pmtid']) && user_access('payment_edit')) {
             $ops .= '<a href=' . crm_url('payment&pmtid=' . $payment[pmtid]) . '>edit</a> ';
         }
         if (user_access('payment_delete')) {
@@ -811,6 +813,7 @@ function payment_method_options () {
     $options = array();
     $options['cash'] = 'Cash';
     $options['cheque'] = 'Cheque';
+    $options['FoxyCart'] = 'FoxyCart';
     $options['other'] = 'Other';
     return $options;
 }

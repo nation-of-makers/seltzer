@@ -23,6 +23,9 @@
 // Save path of directory containing index.php
 $crm_root = dirname(__FILE__);
 
+$err_level = error_reporting(E_ALL ^ E_WARNING);
+error_reporting($err_level);
+
 // Bootstrap the crm
 require_once('include/crm.inc.php');
 
@@ -37,8 +40,10 @@ if (!empty($command)) {
     die();
 }
 
-if ($_GET['q'] == 'logout') {
-    session_destroy();
+if(isset($_GET['q'])) {
+    if ($_GET['q'] == 'logout') {
+        session_destroy();
+    }
 }
 
 $template_vars = array('path' => path());
