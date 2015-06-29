@@ -118,8 +118,9 @@ if (count($data) > 0) {
 // Parse the data and insert into the database
 // 'USD 12.34' goes to ['USD', '1234']
 $parts = explode(' ', $product_price);
-file_put_contents($debug, print_r($parts, true) . "\n", FILE_APPEND);
-$payment_amount = payment_parse_currency($parts[1], $parts[0]);
+if(isset($debug)) {
+    file_put_contents($debug, print_r($parts, true) . "\n", FILE_APPEND);
+}
 // Determine cid
 $cid = '';
 if (empty($cid)) {
