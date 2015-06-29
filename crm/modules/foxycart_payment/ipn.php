@@ -41,7 +41,18 @@ if (isset($_POST["FoxyData"])) {
     //-----------------------------------------------------
     $FoxyData_decrypted = foxycart_decrypt($_POST["FoxyData"]);
     $xml = simplexml_load_string($FoxyData_decrypted, NULL, LIBXML_NOCDATA);
- 
+    $stuff = mysql_real_escape_string($FoxyData_decrypted);
+    $sql = "
+        INSERT INTO `xml_log`
+        (
+            `xml_data`
+        )
+        VALUES
+        (
+            ' $stuff '
+        )
+    ";
+    $res = mysql_query($sql); 
     //For Each Transaction
     foreach($xml->transactions->transaction as $transaction) {
  
@@ -69,6 +80,7 @@ if (isset($_POST["FoxyData"])) {
         $customer_phone = (string)$transaction->customer_phone;
  
         $custom_fields = array();
+        $receipt_url = (string)$transaction->receipt_url;
         if (!empty($transaction->custom_fields)) {
             foreach($transaction->custom_fields->custom_field as $custom_field) {
                 $custom_fields[(string)$custom_field->custom_field_name] = (string)$custom_field->custom_field_value;
@@ -159,12 +171,15 @@ if ($product_code == "Donation" ){
   $notes .= "$fullname Donation. No dues credit. ";
 }
 
+$description = "$product_name <a href='$receipt_url'>(receipt)</a>";
+
 $payment = array(
     'date' => date('Y-m-d', strtotime( $transaction_date))
     , 'credit_cid' => $cid
+    , 'debit_cid' => 0
     , 'code' => 'USD'
     , 'value' => (string)$cents
-    , 'description' => $product_name
+    , 'description' => $description
     , 'method' => 'FoxyCart'
     , 'confirmation' => $transaction_id
     , 'notes' => $notes 
