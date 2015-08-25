@@ -394,7 +394,7 @@ function payment_save ($payment) {
         return NULL;
     }
     // Sanitize input
-    if(isset($pmtid)) {
+    if (isset($payment['pmtid'])) {
         $esc_pmtid = mysql_real_escape_string($payment['pmtid']);
     }
     $esc_date = mysql_real_escape_string($payment['date']);
@@ -402,9 +402,7 @@ function payment_save ($payment) {
     $esc_code = mysql_real_escape_string($payment['code']);
     $esc_value = mysql_real_escape_string($payment['value']);
     $esc_credit = mysql_real_escape_string($payment['credit_cid']);
-    if(isset($debit_cid)) {
-        $esc_debit = mysql_real_escape_string($payment['debit_cid']);
-    }
+    $esc_debit = mysql_real_escape_string($payment['debit_cid']);
     $esc_method = mysql_real_escape_string($payment['method']);
     $esc_confirmation = mysql_real_escape_string($payment['confirmation']);
     $esc_notes = mysql_real_escape_string($payment['notes']);

@@ -62,6 +62,7 @@ if (isset($_POST["FoxyData"])) {
         //Get FoxyCart Transaction Information
         //Simply setting lots of helpful data to PHP variables so you can access it easily
         //If you need to access more variables, you can see some sample XML here: http://wiki.foxycart.com/v/1.1/transaction_xml_datafeed
+        $status =  (string)$transaction->status;
         $transaction_id = (string)$transaction->id;
         $transaction_date = (string)$transaction->transaction_date;
         $customer_ip = (string)$transaction->customer_ip;
@@ -78,7 +79,7 @@ if (isset($_POST["FoxyData"])) {
         $customer_postal_code = (string)$transaction->customer_postal_code;
         $customer_country = (string)$transaction->customer_country;
         $customer_phone = (string)$transaction->customer_phone;
- 
+        
         $custom_fields = array();
         $receipt_url = (string)$transaction->receipt_url;
         if (!empty($transaction->custom_fields)) {
@@ -111,32 +112,61 @@ if (isset($_POST["FoxyData"])) {
                 $weight_mod = (double)$transaction_detail_option->weight_mod;
  
             }
- 
+
+        foreach($transaction->discounts->discount as $discount) { //FIXME: make this handle edge cases that i don't really want to think about right now
+            $discount_amount = (double)$discount->amount;
+        } 
 // Check if the payment already exists
 
 // Skip transactions that have already been imported
 
 $notes = "";
-$payment_opts = array(
-    'filter' => array('confirmation' => $transaction_id)
-);
-$data = crm_get_data('payment', $payment_opts);
-if (count($data) > 0) {
-//    die('This transaction has already been logged by the CRM.  If you want to update the record, delete it from the CRM before re-feeding.');
-//    print "Warning: updating a payment"
-//    $notes .= "Update recieved. ";
-    die("foxy"); //This doesn't really give us anything, so tell FC to shut up now.
+
+if (!empty($status)) {
+    $notes .= "transaction is $status. ";
+    $cents = 0;
+    $transaction_id .= "-$status";
+} else {
+
+    $payment_opts = array(
+        'filter' => array('confirmation' => $transaction_id)
+    );
+    $data = crm_get_data('payment', $payment_opts);
+    if (count($data) > 0) {
+    //    die('This transaction has already been logged by the CRM.  If you want to update the record, delete it from the CRM before re-feeding.');
+    //    print "Warning: updating a payment"
+    //    $notes .= "Update recieved. ";
+        die("foxy"); //This doesn't really give us anything, so tell FC to shut up now.
+    }
+
+    // Parse the data and insert into the database
+    // 'USD 12.34' goes to ['USD', '1234']
+    $parts = explode(' ', $product_price);
+    if(isset($debug)) {
+        file_put_contents($debug, print_r($parts, true) . "\n", FILE_APPEND);
+    }
+
+    if ($product_quantity == 11) {
+        $notes .= "Free month applied.";
+        $product_quantity++;
+    }
+
+    if ($product_quantity == 12) {
+        $notes .= "11 months charged.";
+    }
+
+    if (isset($discount_amount)) {
+        $cents = ($product_price * $product_quantity + $discount_amount) * 100;
+    } else {
+        $cents = $product_price * 100 * $product_quantity;
+    }
+
 }
-// Parse the data and insert into the database
-// 'USD 12.34' goes to ['USD', '1234']
-$parts = explode(' ', $product_price);
-if(isset($debug)) {
-    file_put_contents($debug, print_r($parts, true) . "\n", FILE_APPEND);
-}
+
 // Determine cid
+$fullname = "$customer_first_name $customer_last_name";
 $cid = '';
 if (empty($cid)) {
-    // Check if the amazon name is linked to a contact
        $esc_email = mysql_real_escape_string($customer_email); 
         $sql = "
         SELECT `cid` FROM `contact`
@@ -146,29 +176,16 @@ if (empty($cid)) {
     $cid = $row['cid'];
 }
 
-if ($product_quantity == 11) {
-    $notes .= "Free month applied.";
-    $product_quantity++;
-}
-
-if ($product_quantity == 12) {
-    $notes .= "11 months charged.";
-}
-
-
-$cents = $product_price * 100 * $product_quantity;
-$fullname = "$customer_first_name $customer_last_name";
-
 if (empty($cid)) {
-    $notes .= "$fullname: Wrong email address";
+    $notes .= "$fullname: Wrong email address ";
     if ($fullname == " ") {
-        $notes .= " and no name in metadata. ";
+        $notes .= "and no name in metadata. ";
     }
 }
 
 if ($product_code == "Donation" ){
   $cid = NULL;
-  $notes .= "$fullname Donation. No dues credit. ";
+  $notes = "$fullname Donation. No dues credit. ";
 }
 
 $description = "$product_name <a href='$receipt_url'>(receipt)</a>";
