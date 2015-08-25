@@ -116,27 +116,36 @@ if (isset($_POST["FoxyData"])) {
         foreach($transaction->discounts->discount as $discount) { //FIXME: make this handle edge cases that i don't really want to think about right now
             $discount_amount = (double)$discount->amount;
         } 
-// Check if the payment already exists
 
-// Skip transactions that have already been imported
 
 $notes = "";
 
-if (!empty($status)) {
+if ((!empty($status)) && ($status != "approved")) {
     $notes .= "transaction is $status. ";
     $cents = 0;
-    $transaction_id .= "-$status";
+//    $transaction_id .= "-$status";
 } else {
 
     $payment_opts = array(
         'filter' => array('confirmation' => $transaction_id)
     );
+    // Check if the payment already exists
     $data = crm_get_data('payment', $payment_opts);
     if (count($data) > 0) {
-    //    die('This transaction has already been logged by the CRM.  If you want to update the record, delete it from the CRM before re-feeding.');
-    //    print "Warning: updating a payment"
-    //    $notes .= "Update recieved. ";
-        die("foxy"); //This doesn't really give us anything, so tell FC to shut up now.
+        // Update transactions that have already been imported
+        if (count($data) > 1) {
+            // I hope this doesn't happen. Bail out now.
+            die("Tried to update more than one payment");
+        } else {
+            foreach ($data as $payment) {
+                // Get the CID in case Terry updated it
+                $cid = $payment['credit_cid'];
+                $notes = $payment['notes'];
+                $notes = preg_replace('/transaction is \w+\./', $status, $notes);
+                payment_delete($payment['pmtid']);
+            }
+        }
+        //die("foxy"); //this doesn't really give us anything, so tell FC to shut up now.
     }
 
     // Parse the data and insert into the database
@@ -177,9 +186,13 @@ if (empty($cid)) {
 }
 
 if (empty($cid)) {
-    $notes .= "$fullname: Wrong email address ";
-    if ($fullname == " ") {
-        $notes .= "and no name in metadata. ";
+    if (isset($customer_id)) {
+        $notes .= "customer $customer_id";
+    } else {
+        $notes .= "$fullname: Wrong email address ";
+        if ($fullname == " ") {
+            $notes .= "and no name in metadata. ";
+        }
     }
 }
 
