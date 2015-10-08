@@ -177,7 +177,7 @@ function theme_table_csv ($table_name, $opts = NULL) {
         // Support old style of passing the data directly
         $table = $table_name;
     }
-    
+    $output = "";
     // Check if table is empty
     if (empty($table['rows'])) {
         return '';

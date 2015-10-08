@@ -187,7 +187,7 @@ function _billing_bill_membership ($membership, $until, $after = '') {
             , 'credit_cid' => $membership['cid']
             , 'method' => 'cash'
         );
-        payment_save($payment);
+        //payment_save($payment);
         // Advance to beginning of first full period
         $days = _billing_days_remaining($day_of_month, $period_info);
         $period_start = strtotime("+$days days", $period_start);

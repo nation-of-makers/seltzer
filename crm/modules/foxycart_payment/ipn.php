@@ -79,6 +79,7 @@ if (isset($_POST["FoxyData"])) {
         $customer_postal_code = (string)$transaction->customer_postal_code;
         $customer_country = (string)$transaction->customer_country;
         $customer_phone = (string)$transaction->customer_phone;
+        $payment_gateway_type = (string)$transaction->payment_gateway_type;
         
         $custom_fields = array();
         $receipt_url = (string)$transaction->receipt_url;
@@ -117,7 +118,7 @@ if (isset($_POST["FoxyData"])) {
             $discount_amount = (double)$discount->amount;
         } 
 
-
+$rerun = False; //Default: well check later
 $notes = "";
 
 if ((!empty($status)) && ($status != "approved")) {
@@ -133,6 +134,7 @@ if ((!empty($status)) && ($status != "approved")) {
     $data = crm_get_data('payment', $payment_opts);
     if (count($data) > 0) {
         // Update transactions that have already been imported
+        $rerun = True;
         if (count($data) > 1) {
             // I hope this doesn't happen. Bail out now.
             die("Tried to update more than one payment");
@@ -156,12 +158,16 @@ if ((!empty($status)) && ($status != "approved")) {
     }
 
     if ($product_quantity == 11) {
-        $notes .= "Free month applied.";
+        if (!$rerun) {
+            $notes .= "Free month applied.";
+        }
         $product_quantity++;
     }
 
     if ($product_quantity == 12) {
-        $notes .= "11 months charged.";
+        if (!$rerun) {
+            $notes .= "11 months charged.";
+        }
     }
 
     if (isset($discount_amount)) {
@@ -187,22 +193,39 @@ if (empty($cid)) {
 
 if (empty($cid)) {
     if (isset($customer_id)) {
-        $notes .= "customer $customer_id";
+        if (!$rerun) {
+            $notes .= "customer $customer_id";
+        }
     } else {
-        $notes .= "$fullname: Wrong email address ";
-        if ($fullname == " ") {
-            $notes .= "and no name in metadata. ";
+        if (!$rerun) {
+            $notes .= "$fullname: Wrong email address ";
+            if ($fullname == " ") {
+                $notes .= "and no name in metadata. ";
+            }
         }
     }
 }
 
 if ($product_code == "Donation" ){
-  $cid = NULL;
-  $notes = "$fullname Donation. No dues credit. ";
+    $cid = NULL;
+    if (!$rerun) {
+        $notes = "$fullname Donation. No dues credit. ";
+    }
 }
 
 $description = "$product_name <a href='$receipt_url'>(receipt)</a>";
 
+switch ($payment_gateway_type) {
+    case "amazon_mws":
+        $method = "Amazon";
+    break;
+    case "paypal_express":
+        $method = "PayPal";
+    break;
+    default:
+        $method = "FoxyCart";
+}
+        
 $payment = array(
     'date' => date('Y-m-d', strtotime( $transaction_date))
     , 'credit_cid' => $cid
@@ -210,10 +233,11 @@ $payment = array(
     , 'code' => 'USD'
     , 'value' => (string)$cents
     , 'description' => $description
-    , 'method' => 'FoxyCart'
+    , 'method' => $method
     , 'confirmation' => $transaction_id
     , 'notes' => $notes 
 );
+
 $payment = payment_save($payment);
         }
  
