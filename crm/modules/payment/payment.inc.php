@@ -319,6 +319,9 @@ function payment_data ($opts = array()) {
                 case 'debit_cid':
                     $sql .= " AND (`debit`='$esc_value') ";
                     break;
+                case 'recent':
+                    $sql .= " AND (`date`>=DATE_SUB(CURDATE(), INTERVAL 3 MONTH)) ";
+                    break;
             }
         }
     }
@@ -1085,7 +1088,8 @@ function payment_filter_form () {
     // Available filters
     $filters = array(
         'all' => 'All',
-        'orphaned' => 'Orphaned'
+        'orphaned' => 'Orphaned',
+        'recent' => 'Recent'
     );
     // Default filter
     $selected = empty($_SESSION['payment_filter_option']) ? 'all' : $_SESSION['payment_filter_option'];
@@ -1243,6 +1247,9 @@ function command_payment_filter () {
     }
     if ($_GET['filter'] == 'orphaned') {
         $_SESSION['payment_filter'] = array('credit_cid'=>'0', 'debit_cid'=>'0');
+    }    
+    if ($_GET['filter'] == 'recent') {
+        $_SESSION['payment_filter'] = array('recent'=>'yes');
     }
     // Construct query string
     $params = array();
