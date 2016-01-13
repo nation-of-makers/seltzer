@@ -1087,9 +1087,9 @@ function command_payment_delete() {
 function payment_filter_form () {
     // Available filters
     $filters = array(
-        'all' => 'All',
-        'orphaned' => 'Orphaned',
-        'recent' => 'Recent'
+        'all' => 'All'
+        , 'orphaned' => 'Orphaned'
+        , 'recent' => 'Recent'
     );
     // Default filter
     $selected = empty($_SESSION['payment_filter_option']) ? 'all' : $_SESSION['payment_filter_option'];

@@ -1,4 +1,4 @@
 error_log
-config.inc.php
+config_db.inc.php
 php.ini
 .htaccess

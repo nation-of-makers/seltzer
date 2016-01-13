@@ -29,7 +29,7 @@ $_SESSION['userId'] = 1;
 //version 1.0, 7/9/2012
  
 //Set Globals and Get Settings
-$apikey = "lVH6x8brBgMAWAC4BSvbcuQ3wSMuJnwWe8SB6XWx9z2V4uPvhaAjzgcZYTnD";
+$apikey = variable_get('foxycart_apikey','');
  
 //-----------------------------------------------------
 // TRANSACTION DATAFEED
