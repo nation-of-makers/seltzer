@@ -34,7 +34,7 @@ $config_org_name = 'i3 Detroit';
 $config_currency_code = 'USD';
 
 // The From: address to use when sending email to members
-$config_email_from = 'treasurer@i3detroit.com';
+$config_email_from = 'treasurer@i3detroit.org';
 
 // The email address to notify when a user is created
 $config_email_to = 'contact@i3detroit.com';
