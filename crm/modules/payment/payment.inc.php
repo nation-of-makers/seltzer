@@ -588,6 +588,14 @@ function payment_contact_filter ($filter) {
                     }
                 }
                 break;
+            case 'balance':
+                $balances = payment_accounts();
+                foreach ($balances as $cid => $bal) {
+                    if ($bal['value'] > $value) {
+                        $new_cids[] = $cid;
+                    }
+                }
+                break;
             default:
                 $new_cids = NULL;
         }
@@ -732,7 +740,7 @@ function payment_history_table ($opts) {
         )
         , 'rows' => array()
     );
-    if (user_access('payment_edit')) {
+    if (user_access('payment_edit') && ! isset($opts['output'])) {
         $table['columns'][] = array('title' => 'Ops');
     }
     
@@ -745,7 +753,9 @@ function payment_history_table ($opts) {
                 $contact = $payment['debit'];
             }
         } else {
-            $contact = $payment['credit'];
+            if (isset($_GET['credit'])) {
+                $contact = $payment['credit'];
+            }
         }
         
         $contactName = '';
@@ -770,7 +780,7 @@ function payment_history_table ($opts) {
         if (isset($_GET['pmtid']) && user_access('payment_edit')) {
             $ops .= '<a href=' . crm_url('payment&pmtid=' . $payment[pmtid]) . '>edit</a> ';
         }
-        if (user_access('payment_delete')) {
+        if (user_access('payment_edit') && ! isset($opts['output'])) {
             $ops .= '<a href=' . crm_url('delete&type=payment&id=' . $payment['pmtid']) . '>delete</a>';
         }
         $row[] = $ops;
