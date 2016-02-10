@@ -747,17 +747,24 @@ function theme_amazon_payment_first_month ($cid) {
  */
 function theme_amazon_payment_account_info ($cid) {
     $balances = payment_accounts(array('cid'=>$cid));
-    $balance = $balances[$cid];
-    $params = array(
+    if (array_key_exists($cid, $balances)) {
+        $balance = $balances[$cid];
+    }
+    else
+    {
+        $balance['value'] = 0;
+        $balance['code'] = 'USD';
+    }
+/*    $params = array(
         'referenceId' => $cid
         , 'amount' => $balance['code'] . ' ' . payment_format_currency($balance, false) 
         , 'description' => 'CRM Dues Payment'
-    );
+    );*/
     $output = '<div>';
     $amount = payment_format_currency($balance);
     if ($balance['value'] > 0) {
         $output .= "<p><strong>Outstanding balance:</strong> $amount</p>";
-        $output .= theme('amazon_payment_button', $cid, $params);
+        $output .= theme('amazon_payment_button', $cid, NULL);
     } else {
         $balance['value'] = -1*$balance['value'];
         $amount = payment_format_currency($balance);
@@ -773,8 +780,9 @@ function theme_amazon_payment_account_info ($cid) {
  * @param $params Options for the button.
  * @return A string containing the themed html.
  */
+
 function theme_amazon_payment_button ($cid, $params = array()) {
-    global $config_amazon_payment_access_key_id;
+/*    global $config_amazon_payment_access_key_id;
     global $config_amazon_payment_secret;
     global $config_host;
     if (empty($config_amazon_payment_access_key_id)) {
@@ -811,7 +819,7 @@ function theme_amazon_payment_button ($cid, $params = array()) {
     $params['signatureMethod'] = 'HmacSHA256';
     $host = 'authorize.payments.amazon.com';
     $path = '/pba/paypipeline';
-    $params['signature'] = amazon_payment_signature($params, $host, $path, 'POST');
+    $params['signature'] = amazon_payment_signature($params, $host, $path, 'POST');*/
     $html = <<<EOF
 <!--<form action ="https://authorize.payments.amazon.com/pba/paypipeline" method="POST"/>
 <input type="image" src="https://authorize.payments.amazon.com/pba/images/SLPayNowWithLogo.png" border="0"/>

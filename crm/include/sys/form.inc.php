@@ -310,10 +310,12 @@ function theme_form_text ($field) {
  */
 function theme_form_textarea ($field) {
     $classes = array();
+    $output = '<fieldset class="form-row';
     if (!empty($field['class'])) {
         array_push($classes, $field['class']);
+        $output .= ' ' . $field['class'];
     }
-    $output = '<fieldset class="form-row ' . $field['class'] . '">';
+    $output .= '">';
     if (!empty($field['label'])) {
         $output .= '<label>' . $field['label'] . '</label>';
     }
@@ -357,7 +359,7 @@ function theme_form_checkbox ($field) {
  */
 function theme_form_password ($field) {
     if (!array_key_exists('class', $field)) { $field['class'] = ''; }
-    $output = '<fieldset class="form-row ' . $field['class'] . '">';
+        $output = '<fieldset class="form-row ' . $field['class'] . '">';
     if (!empty($field['label'])) {
         $output .= '<label>' . $field['label'] . '</label>';
     }
