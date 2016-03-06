@@ -391,6 +391,15 @@ function contact_form ($opts = array()) {
         $label = 'Edit Contact Info';
     } else {
         $label = 'Add Contact';
+        $contact = array(
+            'firstName' => ''
+            , 'middleName' => ''
+            , 'lastName' => ''
+            , 'email' => ''
+            , 'phone' => ''
+            , 'emergencyName' => ''
+            , 'emergencyPhone' => ''
+            );
     }
     // Add fields
     $form['fields'][] = array(
@@ -401,36 +410,43 @@ function contact_form ($opts = array()) {
                 'type' => 'text'
                 , 'label' => 'First Name'
                 , 'name' => 'firstName'
+                , 'value' => $contact['firstName']
             )
             , array(
                 'type' => 'text'
                 , 'label' => 'Middle Name'
                 , 'name' => 'middleName'
+                , 'value' => $contact['middleName']
             )
             , array(
                 'type' => 'text'
                 , 'label' => 'Last Name'
                 , 'name' => 'lastName'
+                , 'value' => $contact['lastName']
             )
             , array(
                 'type' => 'text'
                 , 'label' => 'Email'
                 , 'name' => 'email'
+                , 'value' => $contact['email']
             )
             , array(
                 'type' => 'text'
                 , 'label' => 'Phone'
                 , 'name' => 'phone'
+                , 'value' => $contact['phone']
             )
             , array(
                 'type' => 'text'
                 , 'label' => 'Emergency Contact'
                 , 'name' => 'emergencyName'
+                , 'value' => $contact['emergencyName']
             )
             , array(
                 'type' => 'text'
                 , 'label' => 'Emergency Phone'
                 , 'name' => 'emergencyPhone'
+                , 'value' => $contact['emergencyPhone']
             )
         )
     );
