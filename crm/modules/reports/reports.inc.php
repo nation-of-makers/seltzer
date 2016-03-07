@@ -348,9 +348,9 @@ function reports_page (&$page_data, $page_name, $options) {
         
         // Add view, add and import tabs
         if (user_access('reports_view')) {
-            page_add_content_top($page_data, theme('reports_membership', 'membership'), 'Membership');
-            page_add_content_top($page_data, theme('reports_email', 'email'), 'Email');
-            page_add_content_top($page_data, theme('reports_email', 'lapsed'), 'Lapsed Email');
+            page_add_content_top($page_data, theme('reports_membership', 'membership'), 'Membership Graph');
+            page_add_content_top($page_data, theme('reports_email', array('filter'=>array('active'=>true))), 'Active Emails');
+            page_add_content_top($page_data, theme('reports_email', array('filter'=>array('active'=>false))), 'Lapsed Emails');
         }
         break;
     }
