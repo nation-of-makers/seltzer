@@ -340,12 +340,17 @@ function reports_page_list () {
  * @param $options The array of options passed to theme('page').
 */
 function reports_page (&$page_data, $page_name, $options) {
-   // Set page title
-    page_set_title($page_data, 'Reports');
-    
-    // Add view, add and import tabs
-    if (user_access('reports_view')) {
-        page_add_content_top($page_data, theme('reports_membership', 'membership'), 'Membership');
-        page_add_content_top($page_data, theme('reports_email', 'email'), 'Email');
-     }
+    switch ($page_name) {
+
+        case 'reports':
+        // Set page title
+        page_set_title($page_data, 'Reports');
+        
+        // Add view, add and import tabs
+        if (user_access('reports_view')) {
+            page_add_content_top($page_data, theme('reports_membership', 'membership'), 'Membership');
+            page_add_content_top($page_data, theme('reports_email', 'email'), 'Email');
+        }
+        break;
+    }
 }
