@@ -76,6 +76,9 @@ $config_modules[] = "services";
 
 $config_modules[] = "secrets";
 
+// Reports module
+$config_modules[] = "reports";
+
 // Amazon payment integration
 $config_modules[] = "amazon_payment";
 
