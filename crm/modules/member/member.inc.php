@@ -72,7 +72,7 @@ require_once('command.inc.php');
 require_once('page.inc.php');
 
 // Member reports //////////////////////////////////////////////////////////////
-require_once('report.inc.php');
+// require_once('report.inc.php');
 
 // Themeing ////////////////////////////////////////////////////////////////////
 require_once('theme.inc.php');
