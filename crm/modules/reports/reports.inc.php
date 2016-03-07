@@ -350,6 +350,7 @@ function reports_page (&$page_data, $page_name, $options) {
         if (user_access('reports_view')) {
             page_add_content_top($page_data, theme('reports_membership', 'membership'), 'Membership');
             page_add_content_top($page_data, theme('reports_email', 'email'), 'Email');
+            page_add_content_top($page_data, theme('reports_email', 'lapsed'), 'Lapsed Email');
         }
         break;
     }
