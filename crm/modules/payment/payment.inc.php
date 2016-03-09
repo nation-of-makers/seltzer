@@ -213,7 +213,7 @@ function payment_format_currency ($value, $symbol = true) {
                 $pence = sprintf('%02d', $count);
             }
             if ($symbol) {
-                $result .= '£';
+                $result .= 'ï¿½';
             }
             $result .= $pounds . '.' . $pence;
             if ($sign < 0) {
@@ -229,7 +229,7 @@ function payment_format_currency ($value, $symbol = true) {
                 $cents = sprintf('%02d', $count);
             }
             if ($symbol) {
-                $result .= '€';
+                $result .= 'ï¿½';
             }
             $result .= $euros . '.' . $cents;
             if ($sign < 0) {
@@ -1102,7 +1102,7 @@ function payment_filter_form () {
         , 'recent' => 'Recent'
     );
     // Default filter
-    $selected = empty($_SESSION['payment_filter_option']) ? 'all' : $_SESSION['payment_filter_option'];
+    $selected = empty($_SESSION['payment_filter_option']) ? 'recent' : $_SESSION['payment_filter_option'];
     // Construct hidden fields to pass GET params
     $hidden = array();
     foreach ($_GET as $key=>$val) {
