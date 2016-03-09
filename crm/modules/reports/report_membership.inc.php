@@ -114,6 +114,12 @@ function member_statistics () {
             , 'values' => $v
         );
     }
+    // reorder so that plans are in the order we want
+    // this is some fuck-ugly code, but it works
+    $p1 = array_splice($indexed, 5, 1);
+    $p2 = array_splice($indexed, 0, 7);
+    $indexed = array_merge($p2,$p1,$indexed);
+
     return json_encode($indexed);
 }
 
@@ -135,7 +141,8 @@ function theme_report_membership () {
 // Calculate stacking for data
 var layers = $json;
 var stack = d3.layout.stack()
-    .values(function (d) { return d.values; });
+    .values(function (d) { return d.values; })
+    .order("reverse");
 layers = stack(layers);
 var n = layers.length;
 var m = layers[0].values.length;
