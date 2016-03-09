@@ -213,7 +213,7 @@ function payment_format_currency ($value, $symbol = true) {
                 $pence = sprintf('%02d', $count);
             }
             if ($symbol) {
-                $result .= '�';
+                $result .= '£';
             }
             $result .= $pounds . '.' . $pence;
             if ($sign < 0) {
@@ -229,7 +229,7 @@ function payment_format_currency ($value, $symbol = true) {
                 $cents = sprintf('%02d', $count);
             }
             if ($symbol) {
-                $result .= '�';
+                $result .= '€';
             }
             $result .= $euros . '.' . $cents;
             if ($sign < 0) {
