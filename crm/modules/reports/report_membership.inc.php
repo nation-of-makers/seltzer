@@ -110,7 +110,7 @@ function member_statistics () {
     $indexed = array();
     foreach ($results as $pid => $v) {
         $indexed[] = array(
-            'name' => $plans[$pid]['name'] . " ($pid)"
+            'name' => $plans[$pid]['name']
             , 'values' => $v
         );
     }
