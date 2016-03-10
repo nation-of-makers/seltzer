@@ -77,7 +77,7 @@ function theme_table ($table_id, $opts = NULL) {
     if (!empty($table['id'])) {
         $output .= ' id="' . $table['id'] . '"';
     }
-    $class = "seltzer-table";
+    $class = "seltzer-table sortable";
     if (!empty($table['class'])) {
         $class .= ' ' . $table['class'];
     }
