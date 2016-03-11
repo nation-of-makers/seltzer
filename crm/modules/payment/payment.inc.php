@@ -306,6 +306,7 @@ function payment_data ($opts = array()) {
         $cid = mysql_real_escape_string($opts['cid']);
         $sql .= " AND (`debit`='$cid' OR `credit`='$cid') ";
     }
+    if (empty($opts['filter'])) { $opts['filter'] = array('recent'=>'yes'); }
     if (array_key_exists('filter', $opts) && !empty($opts['filter'])) {
         foreach($opts['filter'] as $name => $value) {
             $esc_value = mysql_real_escape_string($value);
