@@ -76,6 +76,11 @@ function memberexit_query ($from, $to) {
 // Forms ////////////////////////////////////////////////////////////////////////
 function memberexit_search_form () {
 
+    $dates = $_GET;
+    if (empty($dates['from'])) {$dates['from'] = date("Y-m-d", strtotime("-1 month"));}
+    if (empty($dates['to'])) {$dates['to'] = date("Y-m-d");}
+
+    // Set Dates
     // Create form structure
     $form = array(
         'type' => 'form'
@@ -96,14 +101,14 @@ function memberexit_search_form () {
                         'type' => 'text'
                         , 'label' => 'From'
                         , 'name' => 'from'
-                        , 'value' => date("Y-m-d")
+                        , 'value' => $dates['from']
                         , 'class' => 'date float'
                     )
                     , array(
                          'type' => 'text'
                         , 'label' => 'To'
                         , 'name' => 'to'
-                        , 'value' => date("Y-m-d")
+                        , 'value' => $dates['to']
                         , 'class' => 'date float'
                     )
                     , array(
