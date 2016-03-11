@@ -306,7 +306,7 @@ function payment_data ($opts = array()) {
         $cid = mysql_real_escape_string($opts['cid']);
         $sql .= " AND (`debit`='$cid' OR `credit`='$cid') ";
     }
-    if (empty($opts['filter'])) { $opts['filter'] = array('recent'=>'yes'); }
+//    if (empty($opts['filter'])) { $opts['filter'] = array('recent'=>'yes'); }
     if (array_key_exists('filter', $opts) && !empty($opts['filter'])) {
         foreach($opts['filter'] as $name => $value) {
             $esc_value = mysql_real_escape_string($value);
@@ -1165,7 +1165,7 @@ function payment_page (&$page_data, $page_name, $options) {
         case 'payments':
             page_set_title($page_data, 'Payments');
             if (user_access('payment_edit')) {
-                $filter = array_key_exists('payment_filter', $_SESSION) ? $_SESSION['payment_filter'] : '';
+                $filter = array_key_exists('payment_filter', $_SESSION) ? $_SESSION['payment_filter'] : array('recent'=>'yes');
                 $content = theme('form', crm_get_form('payment_add'));
                 $content .= theme('form', crm_get_form('payment_filter'));
                 $opts = array(
@@ -1254,7 +1254,7 @@ function command_payment_filter () {
     $_SESSION['payment_filter_option'] = $_GET['filter'];
     // Set filter
     if ($_GET['filter'] == 'all') {
-        $_SESSION['payment_filter'] = array();
+        $_SESSION['payment_filter'] = array('all'=>'yes');
     }
     if ($_GET['filter'] == 'orphaned') {
         $_SESSION['payment_filter'] = array('credit_cid'=>'0', 'debit_cid'=>'0');
