@@ -95,7 +95,7 @@ $config_modules[] = "billing";
 $config_modules[] = "profile_picture";
 
 // Silly nickname module
-$config_modules[] = "template";
+//$config_modules[] = "template";
 
 // Developer tools
 //$config_modules[] = "devel";
