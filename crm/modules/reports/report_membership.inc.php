@@ -116,10 +116,7 @@ function member_statistics () {
     }
     // reorder so that plans are in the order we want
     // this is some fuck-ugly code, but it works
-    $p1 = array_splice($indexed, 5, 1);
-    $p2 = array_splice($indexed, 0, 7);
-    $indexed = array_merge($p2,$p1,$indexed);
-
+    $indexed = array($indexed[7], $indexed[9], $indexed[6], $indexed[5], $indexed[8], $indexed[4], $indexed[3], $indexed[2], $indexed[1], $indexed[0]);
     return json_encode($indexed);
 }
 
