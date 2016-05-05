@@ -34,6 +34,11 @@ $post_command = array_key_exists('command', $_POST) ? $_POST['command'] : '';
 $get_command = array_key_exists('command', $_GET) ? $_GET['command'] : '';
 $command = !empty($post_command) ? $post_command : $get_command;
 
+// redirect not logged in users
+var_dump_pre($command);
+var_dump_pre(user_id());
+var_dump_pre(path());
+
 if (!empty($command)) {
     // Handle command and redirect
     header('Location: ' . command($command));
@@ -46,5 +51,11 @@ if(isset($_GET['q'])) {
     }
 }
 
+
 $template_vars = array('path' => path());
+if (!user_id) {
+    if (path() != 'login' && path() != 'reset' && path() != 'reset-confirm') {
+        $template_vars = array('path' => 'login');
+    }
+}
 print template_render('page', $template_vars);
