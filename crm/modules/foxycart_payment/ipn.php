@@ -246,12 +246,14 @@ $payment = payment_save($payment);
     }
  
     //All Done!
+    session_destroy();
     die("foxy"); //Acknowledge notification received and logged
  
 //-----------------------------------------------------
 // NO POST CONTENT SENT
 //-----------------------------------------------------
 } else {
+    session_destroy();
     die('No Content Received From Datafeed');
 }
  
@@ -337,5 +339,3 @@ class rc4crypt {
         return rc4crypt::encrypt($pwd, $data, $ispwdHex);
     }
 }
-
-session_destroy();
