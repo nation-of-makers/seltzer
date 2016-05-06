@@ -189,6 +189,19 @@ if (empty($cid)) {
     $res = mysql_query($sql);
     $row = mysql_fetch_assoc($res);
     $cid = $row['cid'];
+    
+    // [issue6] if cid is still empty, search for the cid from the last time customerid appeared
+    if (empty($cid) && isset($customer_id)) {
+        $esc_customerid = mysql_real_escape_string($customer_id);
+        $sql = "
+            SELECT `credit`, MAX(created) AS `maxcreated` FROM `payment`
+            WHERE `notes = 'customer " . $customer_id ."'";
+        $res = mysql_query($sql);
+        $row = mysql_fetch_assoc($res);
+        $cid = $row['credit'];
+        $notes .= "customer $customer_id";
+    }
+    // [issue6 end]
 }
 
 if (empty($cid)) {
