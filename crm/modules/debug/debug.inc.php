@@ -23,7 +23,7 @@
  * @return This module's revision number.  Each new release should increment
  * this number.
  */
-function variable_revision () {
+function debug_revision () {
     return 1;
 }
 
@@ -36,8 +36,8 @@ function variable_revision () {
 
 function var_dump_pre() {
     // check if debugging is enabled
-    $debug = variable_get('debug', false);
-    if ($debug) {
+    $debug = variable_get('debug', 'false');
+    if ($debug = 'true') {
         $args = func_get_args();
         foreach ($args as $arg) {
             echo '<pre>';
