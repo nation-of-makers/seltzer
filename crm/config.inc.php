@@ -100,6 +100,9 @@ $config_modules[] = "profile_picture";
 // Developer tools
 //$config_modules[] = "devel";
 
+// Debugging functions
+$config_modules[] = "debug";
+
 // Links to show in the main menu
 $config_links = array(
     '<front>' => 'Home'
