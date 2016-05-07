@@ -107,14 +107,6 @@ function services_getSlackID ($email) {
     return $slackID;
 }
 
-function var_dump_pre($mixed = null) {
-    echo '<pre>';
-    var_dump($mixed);
-    echo '</pre>';
-    return true;
-}
-
-
 
 // DB to Object mapping ////////////////////////////////////////////////////////
 
