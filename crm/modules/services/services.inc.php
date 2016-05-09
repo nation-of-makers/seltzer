@@ -78,35 +78,6 @@ function services_install($old_revision = 0) {
 
 // Utility functions ///////////////////////////////////////////////////////////
 
-function services_getSlackID ($email) {
-    // users.list to get a full dump of users since we cannot search by email
-    $slackUsersList = 'https://i3detroit.slack.com/api/users.list';
-    $data = array('token' => variable_get('slack_token',''));
-    // use key 'http' even if you send the request to https://...
-    $http_options = array(
-        'http' => array(
-            'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
-            'method'  => 'POST',
-            'content' => http_build_query($data),
-        ),
-    );
-    $context  = stream_context_create($http_options);
-    $http_result = file_get_contents($slackUsersList, false, $context);
-    $slackUsers = json_decode($http_result,true);
-    
-    // extract user from array if they exist
-    //var_dump_pre($slackUsers);
-    $slackID = '';
-    $arr_length = count($slackUsers['members']);
-    for( $i = 0; $i < $arr_length; $i++) {
-        if (array_key_exists('email', $slackUsers['members'][$i]['profile']) &&
-         $slackUsers['members'][$i]['profile']['email'] == $email) {
-            $slackID = $slackUsers['members'][$i]['id'];
-        }
-    }
-    return $slackID;
-}
-
 
 // DB to Object mapping ////////////////////////////////////////////////////////
 
@@ -147,8 +118,6 @@ function services_table ($opts) {
                 break;
         }
     }
-    // Get contact info
-    $contacts = crm_get_one('contact', $opts);
     
     // Initialize table
     $table = array(
@@ -164,7 +133,8 @@ function services_table ($opts) {
             $table['columns'][] = array("title"=>'cid', 'class'=>'', 'id'=>'');
         }
         $table['columns'][] = array("title"=>'Service', 'class'=>'', 'id'=>'');
-        $table['columns'][] = array("title"=>'ServiceID', 'class'=>'', 'id'=>'');
+        $table['columns'][] = array("title"=>'Username', 'class'=>'', 'id'=>'');
+        $table['columns'][] = array("title"=>'Status', 'class'=>'', 'id'=>'');
     }
 
     // Add ops column
@@ -172,40 +142,24 @@ function services_table ($opts) {
         $table['columns'][] = array('title'=>'Ops','class'=>'');
     }
 
-    // Add rows
-    // Slack info
-    $row = array();
-    $slackID = services_getSlackID($contacts['email']);
-    if (user_access('services_view') || user_access('services_edit') || $opts['cid'] == user_id()) {
-        // Add cells
-        if ($export) {
-            $row[] = $contacts['cid'];
-        }
-        $row[] = 'Slack';
-        $row[] = $slackID;
-        if (!$export && (user_access('services_edit') || user_access('services_delete')) || $opts['cid'] == user_id()) {
-            // Construct ops array
-            $ops = array();
-            // Add edit op
-            if ((user_access('services_edit') || $opts['cid'] == user_id())) {
-                $ops[] = '<form action="https://i3detroit.slack.com/api/users.admin.invite" method="post">
-                 <input type="hidden" name="token" value=' . variable_get('slack_token','') . '>
-                 <input type="hidden" name="email" value="' . $contacts['email'] . '">
-                 <input type="hidden" name="first_name" value="' . $contacts['firstName'] . '">
-                 <input type="hidden" name="last_name" value="' . $contacts['lastName'] . '">
-                 <input type="hidden" name="set_active" value="true">
-                 <input type="submit" value="Invite">';
-            }
-            // There's no delete function in API yet, so can't show a delete button
-            // Add ops row
-            $row[] = join(' ', $ops);
-        }
-        $table['rows'][] = $row;
+    // Get list of available services
+    $service_files = glob('modules/services/service_*.inc.php');
+    $serviceList = array();
+    foreach ($service_files as $filename) {
+        require_once("$filename");
+        preg_match('/service_(.*)\.inc.php/', $filename, $match);
+        // serviceList = [filename, short name, description]
+        $serviceList[] = $match[1];
     }
-    // End Slack
-    
-    // Wiki Account
-    // End Wiki
+
+    // Add rows
+    $row = array();
+    foreach ($serviceList as $service) {
+        $rowData = call_user_func('service_' . $service . '_addrow', $opts); // this will pull the _addrow from each service subpage
+        $row = [$rowData['serviceName'],$rowData['userName'],$rowData['userStatus'],$rowData['ops']];
+    }
+    // finalize table
+    $table['rows'][] = $row;
     return $table;
 }
 
@@ -249,11 +203,8 @@ function services_page (&$page_data, $page_name, $options) {
             if (empty($cid)) {
                 return;
             }
-            // // Add nickname tab
-            // $nickname = theme('services_nickname', $cid);
-            // page_add_content_bottom($page_data, "blah!", 'View');
-            // break;
-            // Add keys tab
+            
+            // Add Services Table
             if (user_access('services_view') || user_access('services_edit') || user_access('services_delete') || $cid == user_id()) {
                 $services = theme('table', 'services', array('cid' => $cid));
                 $services .= theme('services_form', $cid);
