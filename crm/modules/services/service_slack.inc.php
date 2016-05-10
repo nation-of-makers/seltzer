@@ -50,6 +50,8 @@ function service_slack_getSlackID ($email, $username) {
     $slackUsers = json_decode($http_result,true);
     // extract user from array if they exist
     $slackID = '';
+    $slackName = '';
+    $slackStatus = '';
     $arr_length = count($slackUsers['members']);
     for( $i = 0; $i < $arr_length; $i++) {
         $checkStatus = false;
