@@ -243,6 +243,17 @@ function command_member_membership_add () {
         return crm_url('members');
     }
     
+    // Date Validation
+    $epoch = variable_get('i3_epoch','1970-01-01');
+    if(strtotime($esc_post['start']) < strtotime($epoch)) {
+        error_register("START Date must be $epoch or later");
+        return crm_url("contact&cid=$_POST[cid]&tab=plan");
+    }
+    if(strtotime($esc_post['end']) < strtotime($esc_post['start'])) {
+        error_register("END date must be equal to or later than START date");
+        return crm_url("contact&cid=$_POST[cid]&tab=plan");
+    }
+
     // Add membership
     $sql = "
         INSERT INTO `membership`
@@ -258,10 +269,10 @@ function command_member_membership_add () {
         $sql .= ",'$esc_post[end]'";
     }
     $sql .= ")";
-    
+
     $res = mysql_query($sql);
     if (!$res) crm_error(mysql_error());
-    
+
     return crm_url("contact&cid=$_POST[cid]");
 }
 

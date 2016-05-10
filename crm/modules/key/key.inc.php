@@ -233,6 +233,16 @@ function key_data_alter ($type, $data = array(), $opts = array()) {
  * @return The key structure with as it now exists in the database.
  */
 function key_save ($key) {
+    // Date Validation
+    $epoch = variable_get('i3_epoch','1970-01-01');
+    if(strtotime($key['start']) < strtotime($epoch)) {
+        error_register("START Date must be $epoch or later");
+        return crm_url("contact&cid=$_POST[cid]&tab=keys");
+    }
+    if(!empty($key['end']) && strtotime($key['end']) < strtotime($key['start'])) {
+        error_register("END date must be equal to or later than START date");
+        return crm_url("contact&cid=$_POST[cid]&tab=keys");
+    }
     // Escape values
     $fields = array('kid', 'cid', 'serial', 'slot', 'start', 'end');
     if (isset($key['kid'])) {
@@ -250,8 +260,8 @@ function key_save ($key) {
         }
         $sql = "UPDATE `key` SET " . implode(', ', $clauses) . " ";
         $sql .= "WHERE `kid`='$esc_kid'";
-        $res = mysql_query($sql);
-        if (!$res) die(mysql_error());
+        // $res = mysql_query($sql);
+        // if (!$res) die(mysql_error());
         message_register('Key updated');
     } else {
         // Insert new key
@@ -288,6 +298,7 @@ function key_delete ($key) {
     if (mysql_affected_rows() > 0) {
         message_register('Key deleted.');
     }
+    return crm_get_one('key', array('kid'=>$kid));
 }
 
 // Table data structures ///////////////////////////////////////////////////////
