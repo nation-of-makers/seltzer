@@ -108,7 +108,7 @@ function service_slack_addrow ($opts) {
         // Service Status
         $row['userStatus'] = $slackStatus;
         // Service functions
-        if (!$export && (user_access('services_edit') || user_access('services_delete')) || $opts['cid'] == user_id()) {
+        if ((user_access('services_edit') || user_access('services_delete')) || $opts['cid'] == user_id()) {
             // Construct ops array
             $ops = array();
             // Add edit op based on status
