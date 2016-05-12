@@ -249,7 +249,7 @@ function command_member_membership_add () {
         error_register("START Date must be $epoch or later");
         return crm_url("contact&cid=$_POST[cid]&tab=plan");
     }
-    if(strtotime($esc_post['end']) < strtotime($esc_post['start'])) {
+    if(!empty($esc_post['end']) && strtotime($esc_post['end']) < strtotime($esc_post['start'])) {
         error_register("END date must be equal to or later than START date");
         return crm_url("contact&cid=$_POST[cid]&tab=plan");
     }
