@@ -27,12 +27,12 @@
  * @return The table structure.
 */
 function member_table ($opts = NULL) {
-    
+
     // Ensure user is allowed to view members
     if (!user_access('member_view')) {
         return NULL;
     }
-    
+    // $opts['cid'] = '472';
     // Determine settings
     $export = false;
     foreach ($opts as $option => $value) {
@@ -44,6 +44,7 @@ function member_table ($opts = NULL) {
     }
     
     // Get member data
+    // var_dump_pre($opts);
     $members = member_data($opts);
     
     // Create table structure
@@ -86,17 +87,23 @@ function member_table ($opts = NULL) {
         // Add user data
         $row = array();
         if (user_access('member_view')) {
-            
+        // var_dump_pre("member['membership']",$member['membership']);
             // Construct name
             $contact = $member['contact'];
             $name_link = theme('contact_name', $contact, true);
             // Construct membership info
             $recentMembership = end($member['membership']);
             $plan = '';
-            if (!empty($recentMembership) && empty($recentMembership['end'])) {
-                $plan = $recentMembership['plan']['name'];
+            $today = date("Y-m-d");
+            // var_dump_pre("today, recentMembership['end']",$today, $recentMembership['end']);
+            if (!empty($recentMembership) && // if there is a plan
+              ( $recentMembership['start'] <= $today ) && //and the start data is today or earlier
+              ( empty($recentMembership['end']) || $today <= $recentMembership['end'])) { // and the end date is either null or today or later
+                $plan = $recentMembership['plan']['name']; // then this is an active plan
             }
-            
+            // if (!empty($recentMembership) && empty($recentMembership['end'])) {
+            //     $plan = $recentMembership['plan']['name'];
+            // }
             // Add cells
             if ($export) {
                 $row[] = $member['contact']['cid'];
@@ -137,6 +144,8 @@ function member_table ($opts = NULL) {
         
         // Add row to table
         $table['rows'][] = $row;
+    
+        // break;
     }
     
     // Return table
