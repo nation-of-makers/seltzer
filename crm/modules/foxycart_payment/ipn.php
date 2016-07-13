@@ -80,6 +80,7 @@ if (isset($_POST["FoxyData"])) {
         $customer_country = (string)$transaction->customer_country;
         $customer_phone = (string)$transaction->customer_phone;
         $payment_gateway_type = (string)$transaction->payment_gateway_type;
+        $processor_response = (string)$transaction->processor_response;
         
         $custom_fields = array();
         $receipt_url = (string)$transaction->receipt_url;
@@ -121,10 +122,16 @@ if (isset($_POST["FoxyData"])) {
 $rerun = False; //Default: well check later
 $notes = "";
 
-if ((!empty($status)) && ($status != "approved")) {
+if ((!EMPTY($STATUS)) && ($STATUS != "APPROVED"))
+{ // Money not received yet.  Bail out now.
     $notes .= "transaction is $status. ";
     $cents = 0;
 //    $transaction_id .= "-$status";
+} else if (($payment_gateway_type == "paypal_express") && (EMPTY($processor_response)))
+{   
+    $notes .= "PayPal transaction failed. Contact <a href='mailto:treasurer@i3detroit.com'>treasurer@i3detroit.com</a>.";
+    $cents = 0;
+    $notify_foxy = True;
 } else {
 
     $payment_opts = array(
@@ -260,6 +267,9 @@ $payment = payment_save($payment);
  
     //All Done!
     session_destroy();
+    if (isset($notify_foxy) && $notify_foxy) {
+        die("Test payment detected");
+    }
     die("foxy"); //Acknowledge notification received and logged
  
 //-----------------------------------------------------
