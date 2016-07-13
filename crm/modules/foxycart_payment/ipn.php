@@ -182,13 +182,15 @@ if ((!empty($status)) && ($status != "approved")) {
 $fullname = "$customer_first_name $customer_last_name";
 $cid = '';
 if (empty($cid)) {
-       $esc_email = mysql_real_escape_string($customer_email); 
+    $esc_email = mysql_real_escape_string($customer_email); 
+    if (!empty($esc_mail)) {
         $sql = "
-        SELECT `cid` FROM `contact`
-        WHERE `email` = '" . $customer_email . "'";
-    $res = mysql_query($sql);
-    $row = mysql_fetch_assoc($res);
-    $cid = $row['cid'];
+            SELECT `cid` FROM `contact`
+            WHERE `email` = '" . $customer_email . "'";
+        $res = mysql_query($sql);
+        $row = mysql_fetch_assoc($res);
+        $cid = $row['cid'];
+    }
 }
 
 // [issue06] if cid is still empty, search for the cid from the last time customerid appeared
