@@ -190,7 +190,7 @@ $fullname = "$customer_first_name $customer_last_name";
 $cid = '';
 if (empty($cid)) {
     $esc_email = mysql_real_escape_string($customer_email); 
-    if (!empty($esc_mail)) {
+    if (!empty($esc_email)) {
         $sql = "
             SELECT `cid` FROM `contact`
             WHERE `email` = '" . $customer_email . "'";
