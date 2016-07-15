@@ -41,19 +41,24 @@ function get_cids_onboarding () {
     $result = array();
 
     // Query contacts who are on the Onboarding plan
+    // $sql = "
+    //     SELECT cid FROM contact
+    //     WHERE EXISTS (SELECT * FROM membership 
+    //         WHERE membership.pid = '13' 
+    //         AND membership.end IS NULL 
+    //         AND contact.cid=membership.cid
+    //     );";
     $sql = "
-        SELECT cid FROM contact
-        WHERE EXISTS (SELECT * FROM membership 
-            WHERE membership.pid = '13' 
-            AND membership.end IS NULL 
-            AND contact.cid=membership.cid
-        );";
-    
+        SELECT c.cid, m.start
+        FROM contact c JOIN membership m ON c.cid = m.cid
+        WHERE m.pid = '13' 
+        AND m.end IS NULL
+    ;";
     $res = mysql_query($sql);
     if (!$res) { crm_error(mysql_error($res)); }
    
     $cids=array();
-    while ($row = mysql_fetch_row($res)) $cids[]=$row[0];
+    while ($row = mysql_fetch_row($res)) $cids[]=$row;
     mysql_free_result($res);
 
     return $cids;
@@ -77,12 +82,13 @@ function onboarding_table () {
     $table = array(
         'columns' => array(
             array('title' => 'Name')
+            , array('title' => 'OnBoard Date')
         )
         , 'rows' => array()
     );
 
     // Add rows
-    foreach ($onboarding_cids as $cid) {
+    foreach ($onboarding_cids as list($cid, $sdate)) {
         // Add secrets data
         $row = array();
         // Get info on member
@@ -90,9 +96,9 @@ function onboarding_table () {
         $member = $data[0];
         $contact = $member['contact'];
         $name = theme('contact_name', $contact['cid'], true);
-       // $name_link = theme('contact_name', $member, true);
-   
-        $row[] = $name;
+
+        $row[1] = $name;
+        $row[2] = $sdate;
 
         $table['rows'][] = $row;  
 
