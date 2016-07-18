@@ -168,8 +168,11 @@ function reports_page (&$page_data, $page_name, $options) {
             page_add_content_top($page_data, theme('table', 'reports', $reportList));
         }
         // show report if selected
+        $view_content = '';
         if (isset($options['name'])) {
-            page_add_content_bottom($page_data, theme(${'report_'.$options['name'].'_theme'}, ${'report_'.$options['name'].'_theme_opts'}));
+            $view_content .= '<h3>' . $options['name'] . '</h3>';
+            $view_content .= theme(${'report_'.$options['name'].'_theme'}, ${'report_'.$options['name'].'_theme_opts'});
+            page_add_content_bottom($page_data, $view_content);
         }
         break;
     }
