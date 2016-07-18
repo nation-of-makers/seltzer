@@ -130,7 +130,6 @@ function member_statistics () {
  */
 function theme_report_membership () {
     $json = member_statistics();
-    var_dump_pre($json);
     $output = <<<EOF
 <h2>Membership Report</h2>
 <svg id="membership-report" width="960" height="500">
@@ -191,7 +190,6 @@ var xaxis = d3.svg.axis().orient('bottom').scale(xlabel);
 // Draw lines
 var chart = svg.append('g')
     .attr('transform', 'translate(' + padding.left + ',' + padding.top + ')');
-    //.useInteractiveGuideline(true)    //Tooltips which show all data points. Very nice!;
 chart.selectAll('.rule')
     .data(y.ticks(yaxis.ticks()))
     .enter()
