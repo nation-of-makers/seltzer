@@ -86,7 +86,7 @@ function member_statistics () {
             `plan`.`pid`
             , `plan`.`name`
             , `temp_months`.`month`
-            , UNIX_TIMESTAMP(`temp_months`.`month`) AS `month_timestamp`
+            , UNIX_TIMESTAMP(`temp_months`.`month`) *1000 AS `month_timestamp`
             , count(`membership`.`sid`) AS `member_count`
         FROM `temp_months`
         JOIN `plan`
@@ -101,16 +101,19 @@ function member_statistics () {
     // Build results
     while ($row = mysql_fetch_assoc($res)) {
         $results[$row['pid']][] = array(
-            'x' => (int)$row['month_timestamp']
-            , 'label' => $row['month']
-            , 'y' => (int)$row['member_count']
+            // 'x' => (int)$row['month_timestamp']
+            // , 'label' => $row['month']
+            // , 'y' => (int)$row['member_count']
+            (int)$row['month_timestamp']
+            //, 'label' => $row['month']
+            , (int)$row['member_count']
         );
     }
     // Convert from associative to indexed
     $indexed = array();
     foreach ($results as $pid => $v) {
         $indexed[] = array(
-            'name' => $plans[$pid]['name']
+            'key' => $plans[$pid]['name']
             , 'values' => $v
         );
     }
@@ -130,116 +133,40 @@ function member_statistics () {
  */
 function theme_report_membership () {
     $json = member_statistics();
-    var_dump_pre($json);
+    // var_dump_pre($json);
     $output = <<<EOF
-<h2>Membership Report</h2>
-<svg id="membership-report" width="960" height="500">
-</svg>
-<script type="text/javascript">
-// Calculate stacking for data
-var layers = $json;
-var stack = d3.layout.stack()
-    .values(function (d) { return d.values; })
-    .order("reverse");
-layers = stack(layers);
-var n = layers.length;
-var m = layers[0].values.length;
+    <svg id="chart1" width="960" height="500">
+    </svg>
+    <script type="text/javascript">
 
-// Calculate geometry
-var chartWidth = 960,
-    chartHeight = 500;
-var padding = { left:50, bottom:100, top:25, right:50 };
-var width = chartWidth - padding.left - padding.right;
-var height = chartHeight - padding.bottom - padding.top;
-
-// Create scales
-var x = d3.scale.linear()
-    .domain([d3.min(layers, function(layer) { return d3.min(layer.values, function(d) { return d.x; }); }), d3.max(layers, function(layer) { return d3.max(layer.values, function(d) { return d.x; }); })])
-    .range([0, width]);
-var y = d3.scale.linear()
-    .domain([0, d3.max(layers, function(layer) { return d3.max(layer.values, function(d) { return d.y0 + d.y; }); })])
-    .range([height, 0]);
-var color = d3.scale.linear()
-    .range(["#aa3", "#aaf"])
-    .domain([0, 1]);
-
-var colors = [];
-//var roff = Math.round(Math.random()*15);
-//var goff = Math.round(Math.random()*15);
-//var boff = Math.round(Math.random()*15);
-var roff = 12, goff = 7, boff = 8;
-console.log([roff, goff, boff]);
-for (var i = 0; i < layers.length; i++) {
-    var r = ((i+roff) * 3) % 16;
-    var g = ((i+goff) * 5) % 16;
-    var b = ((i+boff) * 7) % 16;
-    colors[i] = '#' + r.toString(16) + g.toString(16) + b.toString(16);
-}
-
-// Set up the svg element
-var svg = d3.select("#membership-report")
-    .attr("width", chartWidth)
-    .attr("height", chartHeight);
-
-// Define axes
-var yaxis = d3.svg.axis().orient('left').scale(y);
-var xlabel = d3.scale.ordinal()
-    .domain(layers[0].values.map(function (d) { return d.label; }))
-    .rangePoints([0, width]);
-var xaxis = d3.svg.axis().orient('bottom').scale(xlabel);
-
-// Draw lines
-var chart = svg.append('g')
-    .attr('transform', 'translate(' + padding.left + ',' + padding.top + ')');
-    //.useInteractiveGuideline(true)    //Tooltips which show all data points. Very nice!;
-chart.selectAll('.rule')
-    .data(y.ticks(yaxis.ticks()))
-    .enter()
-    .append('line')
-        .attr('class', 'rule')
-        .attr('x1', '0').attr('x2', width)
-        .attr('y1', '0').attr('y2', '0')
-        .attr('transform', function(d) { return 'translate(0,' + y(d) + ')'; })
-        .style('stroke', '#eee');
-    
-// Draw the data
-var area = d3.svg.area()
-    .x(function(d) { return x(d.x); })
-    .y0(function(d) { return y(d.y0); })
-    .y1(function(d) { return y(d.y0 + d.y); });
-chart.selectAll("path")
-    .data(layers)
-  .enter().append("path")
-    .attr('width', width)
-    .attr("d", function (d) { return area(d.values); })
-    .style("fill", function(d,i) { return colors[i]; });
-
-// Draw the axes
-chart.append('g').attr('id', 'yaxis').attr('class', 'axis').call(yaxis).attr('transform', 'translate(-0.5, 0.5)');
-yaxis.orient('right');
-chart.append('g').attr('id', 'yaxis').attr('class', 'axis').call(yaxis).attr('transform', 'translate(' + (width-0.5) + ',0.5)');
-chart.append('g').attr('id', 'xaxis').attr('class', 'axis').call(xaxis)
-    .attr('transform', 'translate(-0.5,' + (height+0.5) + ')')
-    .selectAll('text')
-        .style('text-anchor', 'end')
-        .attr('dy', '-.35em')
-        .attr('dx', '-9')
-        .attr('transform', 'rotate(-90)');
-d3.selectAll('.axis path').attr('fill', 'none').attr('stroke', 'black');
-
-// Draw a legend
-var legend = chart.append('g').attr('id', 'legend')
-    .selectAll('g').data(layers)
-    .enter()
-    .append('g')
-        .attr('transform', function(d,i) { return 'translate(10,' + ((layers.length - i - 1)*22) + ')'; });
-legend.append('rect')
-    .attr('width', '20').attr('height', '20')
-    .style("fill", function(d,i) { return colors[i]; });
-legend.append('text')
-    .text(function (d) { return d.name; })
-    .attr('transform', 'translate(25, 15)');
-</script>
+    var data = $json;
+    var colors = d3.scale.category20();
+    var chart;
+    nv.addGraph(function() {
+        chart = nv.models.stackedAreaChart()
+            .useInteractiveGuideline(true)
+            .x(function(d) { return d[0] })
+            .y(function(d) { return d[1] })
+            .controlLabels({stacked: "Stacked"})
+            .rightAlignYAxis(true)
+            .duration(300);
+        chart.xAxis.tickFormat(function(d) { return d3.time.format('%x')(new Date(d)) });
+        chart.yAxis.tickFormat(d3.format(',.0f'));
+        
+        d3.select('#chart1')
+            .datum(data)
+            .transition().duration(1000)
+            .call(chart)
+            .each('start', function() {
+                setTimeout(function() {
+                    d3.selectAll('#chart1 *').each(function() {
+                        if(this.__transition__)
+                            this.__transition__.duration = 1;
+                    })
+                }, 0)
+            });
+    });
+    </script>
 EOF;
     return $output;
 }
