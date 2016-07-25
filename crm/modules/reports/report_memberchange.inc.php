@@ -203,7 +203,7 @@ function memberchange_results_table () {
  */
 function theme_memberchange ($name) {
     $theme = theme('form', crm_get_form('memberchange_search', $name));
-    $theme .= theme('table', 'memberchange_results');
+    $theme .= theme('table', 'memberchange_results', array('show_export'=>true));
     return $theme;
 }
 

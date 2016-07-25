@@ -187,7 +187,7 @@ function memberexit_results_table () {
  */
 function theme_memberexit ($name) {
     $theme = theme('form', crm_get_form('memberexit_search', $name));
-    $theme .= theme('table', 'memberexit_results');
+    $theme .= theme('table', 'memberexit_results', array('show_export'=>true));
     return $theme;
 }
 

@@ -102,7 +102,7 @@ function theme_table ($table_id, $opts = NULL) {
         $output .= '</th>';
     }
     $output .= "</tr>";
-    if (isset($_GET['show_export']) && $opts['show_export']) {
+    if ($opts['show_export']) {
         $output .= '<tr class="subhead"><td colspan="' . $column_count . '">';
         $output .= $row_count . ' results, export: <a href="' . $export . '">csv</a>';
         $output .= "</td></tr>";
@@ -143,7 +143,7 @@ function theme_table ($table_id, $opts = NULL) {
         $output .= '</tr>';
     }
     
-    if (isset($_GET['show_export']) && $opts['show_export']) {
+    if ($opts['show_export']) {
         $output .= '<tr class="subhead"><td colspan="' . $column_count . '">';
         $output .= $row_count . ' results, export: <a href="' . $export . '">csv</a>';
         $output .= "</td></tr>";

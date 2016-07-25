@@ -123,16 +123,16 @@ function get_membershipdata () {
 }
 
 // Tables ///////////////////////////////////////////////////////////////////////
-function membershipdata_table () {
+function membershipdata_table ($opts) {
     // Determine settings
-    $export = false;
-    // foreach ($opts as $option => $value) {
-    //     switch ($option) {
-    //         case 'export':
-    //             $export = $value;
-    //             break;
-    //     }
-    // }
+    $export = true;
+    foreach ($opts as $option => $value) {
+        switch ($option) {
+            case 'export':
+                $export = $value;
+                break;
+        }
+    }
 
     $membershipdata = get_membershipdata();
     $headers = array_shift($membershipdata);

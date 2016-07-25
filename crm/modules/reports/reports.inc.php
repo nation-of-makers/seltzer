@@ -171,7 +171,7 @@ function reports_page (&$page_data, $page_name, $options) {
         $view_content = '';
         if (isset($options['name'])) {
             $view_content .= '<h3>' . ${'report_'.$options['name'].'_name'} . '</h3>';
-            $view_content .= theme(${'report_'.$options['name'].'_theme'}, ${'report_'.$options['name'].'_theme_opts'});
+            $view_content .= theme(${'report_'.$options['name'].'_theme'}, ${'report_'.$options['name'].'_theme_opts'}, array('show_export'=>true));
             page_add_content_bottom($page_data, $view_content);
         }
         break;
