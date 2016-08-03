@@ -260,8 +260,8 @@ function key_save ($key) {
         }
         $sql = "UPDATE `key` SET " . implode(', ', $clauses) . " ";
         $sql .= "WHERE `kid`='$esc_kid'";
-        // $res = mysql_query($sql);
-        // if (!$res) die(mysql_error());
+        $res = mysql_query($sql);
+        if (!$res) die(mysql_error());
         message_register('Key updated');
     } else {
         // Insert new key

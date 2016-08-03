@@ -38,6 +38,10 @@ function var_dump_pre() {
     // check if debugging is enabled
     $debug = variable_get('debug', 'false');
     if ($debug = 'true') {
+    // Set output options
+        ini_set('xdebug.var_display_max_depth', 5);
+        ini_set('xdebug.var_display_max_children', 256);
+        ini_set('xdebug.var_display_max_data', 1024);
         $args = func_get_args();
         foreach ($args as $arg) {
             echo '<pre>';
