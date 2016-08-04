@@ -673,7 +673,7 @@ function key_page (&$page_data, $page_name, $options) {
             
             // Add keys tab
             if (user_access('key_view') || user_access('key_edit') || user_access('key_delete') || $cid == user_id()) {
-                $keys = theme('table', 'key', array('cid' => $cid));
+                $keys = theme('table', 'key', array('cid' => $cid), array('show_export'=>false));
                 $keys .= theme('key_add_form', $cid);
                 page_add_content_bottom($page_data, $keys, 'Keys');
             }
