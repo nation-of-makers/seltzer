@@ -102,10 +102,12 @@ function theme_table ($table_id, $opts = NULL) {
         $output .= '</th>';
     }
     $output .= "</tr>";
-    if ($opts['show_export']) {
-        $output .= '<tr class="subhead"><td colspan="' . $column_count . '">';
-        $output .= $row_count . ' results, export: <a href="' . $export . '">csv</a>';
-        $output .= "</td></tr>";
+    if (array_key_exists('show_export', $opts)) {
+        if ($opts['show_export']) {
+            $output .= '<tr class="subhead"><td colspan="' . $column_count . '">';
+            $output .= $row_count . ' results, export: <a href="' . $export . '">csv</a>';
+            $output .= "</td></tr>";
+        }
     }
     $output .= "</thead>";
     
@@ -143,10 +145,12 @@ function theme_table ($table_id, $opts = NULL) {
         $output .= '</tr>';
     }
     
-    if ($opts['show_export']) {
-        $output .= '<tr class="subhead"><td colspan="' . $column_count . '">';
-        $output .= $row_count . ' results, export: <a href="' . $export . '">csv</a>';
-        $output .= "</td></tr>";
+    if (array_key_exists('show_export', $opts)) {
+        if ($opts['show_export']) {
+            $output .= '<tr class="subhead"><td colspan="' . $column_count . '">';
+            $output .= $row_count . ' results, export: <a href="' . $export . '">csv</a>';
+            $output .= "</td></tr>";
+        }
     }
     
     $output .= "</tbody>";
